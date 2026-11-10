@@ -1,0 +1,1047 @@
+<title>سكر الأطفال</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+/* Layout: a header, a sticky tab bar (guide, patient record, body and chemistry, assistant, tools), one reading column per tab. The blue ring (the diabetes symbol) is the only ornament; diagrams use the same tokens. */
+:root{
+  direction:rtl;
+  --bg:#f1f6fc; --surface:#ffffff; --fg:#0e2a47; --muted:#4d6279; --line:#d3deeb;
+  --accent:#1565c0; --accent-fg:#ffffff; --tint:#e2eefb;
+  --low-bg:#fff3d1; --low-fg:#6d4300; --low-line:#ecd083;
+  --hi-bg:#fdebe9; --hi-fg:#85201a; --hi-line:#f0b5b0;
+  --ok-bg:#e3f4ea; --ok-fg:#14532d; --ok-line:#a7d7b8;
+  --beta:#1565c0; --alpha:#c77700; --delta:#13806f; --glu:#e08a00; --bad:#c62828;
+  --f-display:'Reem Kufi','IBM Plex Sans Arabic',sans-serif;
+  --f-body:'IBM Plex Sans Arabic',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b1623; --surface:#122236; --fg:#e3edf8; --muted:#9db2c8; --line:#243a54;
+  --accent:#6fb1ff; --accent-fg:#071729; --tint:#16304d;
+  --low-bg:#3b2d0a; --low-fg:#ffd98a; --low-line:#6b5116;
+  --hi-bg:#3b1a18; --hi-fg:#ffb7b0; --hi-line:#6d2d29;
+  --ok-bg:#12331f; --ok-fg:#a9e6bf; --ok-line:#2c6a45;
+  --beta:#6fb1ff; --alpha:#ffb74d; --delta:#4dd0b8; --glu:#ffb74d; --bad:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1623; --surface:#122236; --fg:#e3edf8; --muted:#9db2c8; --line:#243a54;
+  --accent:#6fb1ff; --accent-fg:#071729; --tint:#16304d;
+  --low-bg:#3b2d0a; --low-fg:#ffd98a; --low-line:#6b5116;
+  --hi-bg:#3b1a18; --hi-fg:#ffb7b0; --hi-line:#6d2d29;
+  --ok-bg:#12331f; --ok-fg:#a9e6bf; --ok-line:#2c6a45;
+  --beta:#6fb1ff; --alpha:#ffb74d; --delta:#4dd0b8; --glu:#ffb74d; --bad:#ff8a80; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.8;margin:0;
+  padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.wrap{max-width:780px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);line-height:1.35;text-wrap:balance;margin:0}
+button,input,select,textarea,summary{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 8px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1.3rem;color:var(--accent)}
+.dot{width:22px;height:22px;border-radius:50%;border:5px solid var(--accent)}
+.sos{font-size:.85rem;color:var(--muted)}.sos b{color:var(--hi-fg)}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding-block:8px;border-bottom:1px solid var(--line);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{flex:none;text-decoration:none;color:var(--muted);padding:5px 16px;border-radius:999px;font-weight:500;font-size:.95rem;border:1px solid transparent}
+.tabs a[aria-selected="true"]{background:var(--accent);color:var(--accent-fg)}
+.tabs a:not([aria-selected="true"]):hover{border-color:var(--line);color:var(--fg)}
+.view{padding-top:18px}
+.hero h1{font-size:clamp(1.8rem,6.2vw,2.6rem);font-weight:700}
+.hero p{color:var(--muted);max-width:36em;margin:8px 0 0}
+.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:18px}
+.quick a{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:var(--fg);padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);min-width:0}
+.quick a b{font-family:var(--f-display);color:var(--accent);font-size:1.02rem}
+.quick a span{font-size:.82rem;color:var(--muted);line-height:1.5}
+.quick a:hover{border-color:var(--accent)}
+.nav{display:flex;gap:8px;overflow-x:auto;padding-block:16px 6px;scrollbar-width:thin}
+.nav button{flex:none;border:1px solid var(--line);background:var(--surface);padding:3px 14px;border-radius:999px;font-size:.88rem}
+.sos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:16px}
+.card{border-radius:12px;padding:16px;border:1px solid var(--line);background:var(--surface);min-width:0}
+.card h2{font-size:1.15rem;margin-bottom:6px}
+.card ol,.card ul{margin:0;padding-inline-start:1.3em}
+.card li{margin-block:3px}
+.low{background:var(--low-bg);color:var(--low-fg);border-color:var(--low-line)}
+.hi{background:var(--hi-bg);color:var(--hi-fg);border-color:var(--hi-line)}
+.ok{background:var(--ok-bg);color:var(--ok-fg);border-color:var(--ok-line)}
+h2.sec-t{font-size:1.3rem;margin:28px 0 10px}
+h2.sec-t:first-child{margin-top:0}
+.lead{color:var(--muted);margin:0 0 12px;max-width:40em}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:10px}
+summary{cursor:pointer;padding:14px 16px;font-family:var(--f-display);font-weight:700;font-size:1.1rem;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--accent);font-size:1.4rem;line-height:1}
+details[open] summary::after{content:"−"}
+.body{padding:0 16px 16px}
+.body h3{font-size:1.02rem;margin:16px 0 4px;color:var(--accent)}
+.body p{margin:6px 0}
+.body ul,.body ol{margin:6px 0;padding-inline-start:1.3em}
+.body li{margin-block:3px}
+.box{margin-top:12px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--tint)}
+.box.low{background:var(--low-bg)}.box.hi{background:var(--hi-bg)}
+.tbl{overflow-x:auto;margin-top:8px}
+table{border-collapse:collapse;width:100%;min-width:420px;font-size:.92rem}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:right;vertical-align:top}
+th{background:var(--tint);font-weight:600}
+.src{display:inline-block;font-family:var(--f-body);font-size:.68rem;font-weight:600;letter-spacing:.04em;padding:0 7px;border-radius:6px;vertical-align:middle;border:1px solid var(--line);background:var(--tint);color:var(--accent)}
+.src.ispad{color:var(--alpha)}
+.fig{margin:12px 0 4px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.fig svg{display:block;width:100%;height:auto;max-width:520px;margin:0 auto;direction:ltr}
+.fig figcaption{font-size:.84rem;color:var(--muted);margin-top:6px;text-align:center;line-height:1.6}
+.sv{font:500 12px var(--f-body);fill:var(--fg)}.sv.sm{font-size:10.5px;fill:var(--muted)}.sv.b{font-weight:600}
+.sv-line{stroke:var(--line);fill:none;stroke-width:1.5}
+.sv-tint{fill:var(--tint)}.sv-hi{fill:var(--hi-bg);stroke:var(--hi-line)}.sv-surf{fill:var(--surface)}
+.sv-beta{fill:var(--beta)}.sv-alpha{fill:var(--alpha)}.sv-delta{fill:var(--delta)}.sv-glu{fill:var(--glu)}
+.sv-acc{stroke:var(--accent);fill:none;stroke-width:2}.sv-bad{stroke:var(--bad);fill:none;stroke-width:2.5;stroke-linecap:round}
+.sv-panc{fill:var(--tint);stroke:var(--accent);stroke-width:2}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);border-radius:10px;padding:6px 16px;font-weight:600;line-height:1.6}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.danger{background:transparent;color:var(--hi-fg);border-color:var(--hi-line)}
+.btn.danger[data-armed]{background:var(--hi-fg);color:var(--hi-bg)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.sm{padding:2px 12px;font-size:.88rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px 12px;margin-top:8px}
+.f{display:flex;flex-direction:column;gap:2px;min-width:0}
+.f>span,.lab{font-size:.86rem;color:var(--muted)}
+.f input,.f select,.f textarea,.sel{width:100%;min-width:0;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.f textarea{min-height:68px;resize:vertical}
+.f.wide{grid-column:1/-1}
+.chks{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chk{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:.9rem;cursor:pointer}
+.chk input{accent-color:var(--accent);margin:0}
+.chk:has(input:checked){background:var(--tint);border-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{padding:10px 12px;border-radius:10px;background:var(--tint);min-width:0}
+.stat small{display:block;color:var(--muted);font-size:.8rem;line-height:1.5}
+.stat b{font-family:var(--f-display);font-size:1.15rem;font-variant-numeric:tabular-nums}
+.flags{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.flags li{padding:7px 12px;border-radius:8px;font-size:.92rem;border:1px solid var(--line);background:var(--surface)}
+.flags li.w{background:var(--low-bg);color:var(--low-fg);border-color:var(--low-line)}
+.flags li.r{background:var(--hi-bg);color:var(--hi-fg);border-color:var(--hi-line)}
+.flags li.g{background:var(--ok-bg);color:var(--ok-fg);border-color:var(--ok-line)}
+.privacy{margin-top:12px;font-size:.86rem;color:var(--muted)}
+.chart svg{display:block;width:100%;height:auto;max-width:520px;direction:ltr}
+.cg{stroke:var(--line);stroke-width:1}.ct{font:11px var(--f-body);fill:var(--muted)}.cv{font:600 11px var(--f-body);fill:var(--fg)}
+.cl{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round}.cp{fill:var(--surface);stroke:var(--accent);stroke-width:2.5}
+.cd{stroke:var(--delta);stroke-width:1.5;stroke-dasharray:5 4}
+.bot{border:1.5px solid var(--accent);border-radius:14px;background:var(--surface);overflow:hidden}
+.bot-h{padding:14px 16px;background:var(--tint)}
+.bot-h h2{font-size:1.2rem}
+.bot-h p{margin:2px 0 0;color:var(--muted);font-size:.9rem;line-height:1.6}
+.ctx{display:flex;gap:10px;align-items:flex-start;padding:10px 16px;border-bottom:1px solid var(--line);font-size:.88rem;line-height:1.6}
+.ctx input{margin-top:5px;accent-color:var(--accent)}
+.msgs{padding:12px 16px;display:flex;flex-direction:column;gap:10px;height:min(52vh,460px);overflow-y:auto}
+.m{padding:10px 14px;border-radius:12px;max-width:92%;overflow-wrap:anywhere}
+.m.u{align-self:flex-start;background:var(--accent);color:var(--accent-fg)}
+.m.a{align-self:flex-end;background:var(--tint)}
+.m p{margin:0 0 6px}.m p:last-child{margin:0}.m ul{margin:4px 0;padding-inline-start:1.2em}
+.m .think{color:var(--muted)}
+.m .sosline{display:block;margin-bottom:6px;padding:6px 10px;border-radius:8px;background:var(--hi-bg);color:var(--hi-fg);font-weight:600}
+.m .lowline{display:block;margin-bottom:6px;padding:6px 10px;border-radius:8px;background:var(--low-bg);color:var(--low-fg);font-weight:500;font-size:.92rem}
+.sugs{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 10px}
+.sugs button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:2px 12px;font-size:.85rem;text-align:right}
+.ask{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+.ask input{flex:1;min-width:0;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
+.ask input::placeholder{color:var(--muted)}
+.ask .btn{padding:0 18px}
+.bot-n{padding:0 16px 12px;font-size:.78rem;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.bot-n button{border:0;background:none;color:var(--accent);padding:0;font-size:.78rem;text-decoration:underline}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.tool label{display:block;font-size:.9rem;color:var(--muted);margin-top:8px}
+.tool input{width:100%;padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);direction:ltr;text-align:right}
+.out{margin-top:10px;font-weight:600;font-variant-numeric:tabular-nums;min-height:1.8em}
+.note{margin-top:28px;padding:14px 16px;border-radius:12px;background:var(--tint);font-size:.9rem}
+footer{margin-top:14px;font-size:.8rem;color:var(--muted)}
+footer ol{margin:6px 0 0;padding-inline-start:1.3em}
+footer a{color:var(--accent)}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hero .ht{flex:1 1 280px;min-width:0}
+.hero svg{flex:0 0 auto;width:150px;height:auto;max-width:40%;margin-inline:auto}
+@media (max-width:480px){.hero svg{width:110px}}
+.quick a svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:4px}
+.fab{position:fixed;z-index:40;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:8px;padding:10px 18px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-fg);font-weight:600;box-shadow:0 6px 18px rgba(8,30,60,.28)}
+.fab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.drawer{position:fixed;z-index:45;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:min(420px,calc(100vw - 32px));height:min(620px,calc(100vh - 200px));border-radius:16px;overflow:hidden;background:var(--surface);border:1.5px solid var(--accent);box-shadow:0 14px 40px rgba(8,30,60,.35)}
+.drawer .bot{height:100%;display:flex;flex-direction:column;border:0;border-radius:0}
+.drawer .msgs{flex:1;height:auto;min-height:0}
+.drawer .bot-h{padding-left:52px}
+.dclose{position:absolute;z-index:2;top:10px;left:10px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:1.3rem;line-height:1;padding:0}
+.hero{background:var(--tint);border-radius:18px;padding:20px 20px 16px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;border:28px solid var(--accent);opacity:.08;left:-80px;bottom:-110px;pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.card{box-shadow:0 1px 2px rgba(14,42,71,.06)}
+h2.sec-t::before{content:"";display:inline-block;width:.55em;height:.55em;border:.2em solid var(--accent);border-radius:50%;margin-inline-end:.5em;vertical-align:.05em}
+details[open]{border-color:var(--accent)}
+summary:hover{background:var(--tint);border-radius:12px}
+.stat b{font-size:1.3rem;color:var(--accent)}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.btn.sos-b{background:var(--hi-bg);color:var(--hi-fg);border-color:var(--hi-line);font-weight:700}
+.sos-ov{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 28px max(16px,env(safe-area-inset-left,0px))}
+.sos-ov h2{font-size:1.5rem}
+.call{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:14px 18px;border-radius:14px;background:var(--hi-fg);color:var(--hi-bg)}
+.call b{font-family:var(--f-display);font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.call small{display:block;opacity:.85}
+.call a{color:inherit;border:1.5px solid currentColor;border-radius:999px;padding:4px 18px;text-decoration:none;font-weight:600}
+.sos-ov .card{margin-top:12px}
+.sbar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:12px 0 6px;background:var(--line)}
+.sbar i{display:block;min-width:0}
+.sbar .lo{background:var(--bad)}.sbar .in{background:var(--delta)}.sbar .hi2{background:var(--alpha)}
+.leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem;color:var(--muted)}
+.leg span::before{content:"";display:inline-block;width:.7em;height:.7em;border-radius:50%;margin-inline-end:.4em;background:var(--c)}
+.glist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.glist li{display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);flex-wrap:wrap}
+.glist .gv{font-family:var(--f-display);font-weight:700;font-size:1.05rem;min-width:3.2em;font-variant-numeric:tabular-nums}
+.gv.l{color:var(--bad)}.gv.h{color:var(--alpha)}.gv.n{color:var(--delta)}
+.glist .gt{margin-inline-start:auto;font-size:.82rem;color:var(--muted)}
+.pl{fill:var(--bad)}.pn{fill:var(--delta)}.ph{fill:var(--alpha)}
+.gpt{stroke:var(--surface);stroke-width:1.5}
+.band{fill:var(--ok-bg)}
+.srcgrid{display:grid;gap:10px}
+.srcrow{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.srcrow small{grid-column:1/-1;color:var(--muted);font-size:.84rem;line-height:1.6}
+.src.mixed{color:var(--muted)}
+.rev{display:grid;gap:8px;margin-top:10px}
+.rev .ln{display:flex;gap:10px;align-items:baseline;border-bottom:1px dashed var(--line);padding-bottom:4px}
+.rev .ln span:first-child{color:var(--muted);font-size:.9rem;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.quick a{transition:transform .15s,border-color .15s}.quick a:hover{transform:translateY(-2px)}}
+@media (prefers-reduced-motion:no-preference){.nav{scroll-behavior:smooth}}
+</style>
+
+<div class="wrap" lang="ar" dir="rtl">
+<header>
+  <div class="logo"><span class="dot" aria-hidden="true"></span>سكر الأطفال</div>
+  <div class="hdr-r"><button class="btn sm sos-b" id="sosBtn" type="button">طوارئ</button><span class="sos">الإسعاف <b>123</b></span></div>
+</header>
+<nav class="tabs" aria-label="الأقسام">
+  <a id="tab-guide" href="#guide">الدليل</a>
+  <a id="tab-record" href="#record">سجل المريض</a>
+  <a id="tab-body" href="#body">الجسم والكيمياء</a>
+  <a id="tab-ask" href="#ask">المساعد</a>
+  <a id="tab-tools" href="#tools">أدوات</a>
+  <a id="tab-sources" href="#sources">المصادر</a>
+</nav>
+
+<!-- ============ الدليل ============ -->
+<main id="v-guide" class="view">
+  <section class="hero">
+    <div class="ht">
+      <h1>السكر من النوع الأول عند الأطفال</h1>
+      <p>دليل مفصّل للأهل والمراهقين بالعامية المصرية: من أول يوم تشخيص لحد الحياة اليومية والمدرسة والرياضة وحالات الطوارئ.</p>
+    </div>
+    <svg viewBox="0 0 160 150" role="img" aria-label="رسم لقطرة دم داخل الدائرة الزرقاء، رمز السكر" style="direction:ltr">
+      <circle cx="80" cy="75" r="68" fill="var(--surface)"/>
+      <circle cx="80" cy="75" r="46" fill="none" stroke="var(--accent)" stroke-width="10"/>
+      <path d="M80 42 C80 42 59 70 59 86 A21 21 0 0 0 101 86 C101 70 80 42 80 42 Z" fill="var(--accent)"/>
+      <ellipse cx="72" cy="88" rx="4" ry="8" transform="rotate(18 72 88)" fill="var(--surface)" opacity=".45"/>
+      <path d="M126 112 C123 106 114 109 117 117 C119 122 126 127 126 127 C126 127 133 122 135 117 C138 109 129 106 126 112 Z" fill="var(--bad)"/>
+      <path d="M30 40 h12 M36 34 v12" stroke="var(--delta)" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="132" cy="38" r="5" fill="var(--glu)"/><circle cx="26" cy="112" r="4" fill="var(--glu)"/><circle cx="142" cy="72" r="3" fill="var(--delta)"/>
+    </svg>
+  </section>
+  <section class="sos-grid" aria-label="الطوارئ">
+    <div class="card low">
+      <h2>هبوط السكر (أقل من 70 mg/dL)</h2>
+      <ol>
+        <li>اديله 15 جم سكر سريع: نص كوب عصير أو 3–4 أقراص جلوكوز.</li>
+        <li>استنى 15 دقيقة وقِس تاني.</li>
+        <li>لسه واطي؟ كرر. لما يتظبط اديله وجبة خفيفة.</li>
+        <li><b>مش قادر يبلع أو فاقد الوعي أو بيتشنج:</b> وضعه على جنبه، ماتحطش حاجة في بقه، واتصل بالإسعاف 123.</li>
+      </ol>
+    </div>
+    <div class="card hi">
+      <h2>سكر عالي + كيتونات أو مرض</h2>
+      <ul>
+        <li>قيء أو ألم بطن أو نفَس عميق وسريع أو نعاس غير معتاد: <b>مستشفى فوراً.</b></li>
+        <li>ماتوقفش الإنسولين الطويل أبداً من نفسك.</li>
+        <li>كلّم فريق السكر فوراً في أي مرض مع سكر عالي.</li>
+      </ul>
+    </div>
+  </section>
+  <section class="quick" aria-label="اختصارات">
+    <a href="#record"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg><b>سجل المريض</b><span>تاريخ مرضي ومتابعة دورية</span></a>
+    <a href="#body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13c0-4 5-5 9-4s7-1 9-2c1 2-1 5-4 7-4 3-9 3-12 2-1-.5-2-1.500-2-3z"/></svg><b>الجسم والكيمياء</b><span>البنكرياس والإنسولين برسومات بسيطة</span></a>
+    <a href="#ask"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H10l-4 4v-4H4z"/></svg><b>اسأل المساعد</b><span>إجابات فورية بالمصري</span></a>
+    <a href="#tools"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-4"/></svg><b>أدوات سريعة</b><span>تحويل وحدات و HbA1c</span></a>
+  </section>
+  <h2 class="sec-t">المواضيع بالتفصيل</h2>
+  <nav class="nav" id="nav" aria-label="المواضيع"></nav>
+  <div id="topics"></div>
+</main>
+
+<!-- ============ سجل المريض ============ -->
+<main id="v-record" class="view" hidden>
+  <h2 class="sec-t">سجل المريض</h2>
+  <p class="lead">خد التاريخ المرضي مرة واحدة، وسجّل كل زيارة متابعة. المعايير المرجعية معلّمة بمصدرها: <span class="src who">WHO</span> لمعايير التشخيص، و <span class="src ispad">ISPAD</span> لأهداف المتابعة عند الأطفال.</p>
+
+  <div class="card">
+    <div class="row">
+      <select id="pSel" class="sel" style="flex:1;min-width:150px" aria-label="اختر الطفل"></select>
+      <button class="btn sm" id="pNew" type="button">طفل جديد</button>
+      <button class="btn sm danger" id="pDel" type="button">حذف</button>
+    </div>
+    <p class="privacy" id="saveState">البيانات بتتحفظ على جهازك في المتصفح ده بس، ومش بتتبعت لأي حد. ماتكتبش الاسم الكامل ولا الرقم القومي: استخدم رمز أو الحروف الأولى.</p>
+    <div class="row" style="margin-top:8px">
+      <button class="btn sm ghost" id="pExample" type="button">جرّب بمثال</button>
+      <button class="btn sm ghost" id="pExport" type="button" hidden>حفظ نسخة احتياطية</button>
+      <label class="btn sm ghost" for="pImport" style="cursor:pointer">استرجاع نسخة</label>
+      <input id="pImport" type="file" accept=".json,application/json" hidden>
+    </div>
+  </div>
+
+  <div id="pEmpty" class="card" style="margin-top:12px">
+    <b>مفيش أطفال في السجل لسه.</b>
+    <p class="muted" style="margin:4px 0 0">دوس "طفل جديد" وابدأ بالتاريخ المرضي، أو "جرّب بمثال" عشان تشوف الشكل النهائي.</p>
+  </div>
+
+  <div id="pBody" hidden>
+    <section class="card" style="margin-top:12px" aria-label="ملخص">
+      <h2>ملخص الحالة</h2>
+      <div class="stats" id="stats"></div>
+      <ul class="flags" id="flags"></ul>
+      <div class="row" style="margin-top:10px"><button class="btn sm ghost" id="sumExport" type="button" hidden>حفظ ملخص للدكتور</button></div>
+    </section>
+
+    <h2 class="sec-t">أولاً: أخذ التاريخ المرضي (History Taking)</h2>
+    <div id="pform">
+      <details open><summary>بيانات الطفل</summary><div class="body"><div class="fg">
+        <label class="f"><span>الرمز أو الحروف الأولى</span><input data-k="code" type="text" maxlength="24" autocomplete="off"></label>
+        <label class="f"><span>النوع</span><select data-k="sex"><option value="">—</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></label>
+        <label class="f"><span>تاريخ الميلاد</span><input data-k="dob" type="date"></label>
+        <label class="f"><span>تاريخ التشخيص</span><input data-k="dx" type="date"></label>
+        <label class="f"><span>وزن الميلاد (كجم)</span><input data-k="bw" type="number" inputmode="decimal" step="0.01" min="0"></label>
+        <label class="f"><span>الرضاعة في أول 6 شهور</span><select data-k="feed"><option value="">—</option><option>طبيعية</option><option>صناعية</option><option>مختلطة</option></select></label>
+      </div></div></details>
+
+      <details><summary>الشكوى وقت التشخيص</summary><div class="body">
+        <span class="lab">الأعراض</span>
+        <div class="chks" id="c-sx"></div>
+        <div class="fg">
+          <label class="f"><span>مدة الأعراض (أسابيع)</span><input data-k="sxw" type="number" inputmode="numeric" min="0"></label>
+          <label class="f"><span>اتشخّص وهو في حموضة كيتونية؟</span><select data-k="dkaDx"><option value="">—</option><option>أيوه</option><option>لأ</option></select></label>
+        </div>
+        <span class="lab" style="display:block;margin-top:10px">علامات خطر وقت أول زيارة</span>
+        <div class="chks" id="c-dka"></div>
+      </div></details>
+
+      <details><summary>تحاليل التشخيص</summary><div class="body">
+        <div class="fg">
+          <label class="f"><span>جلوكوز عشوائي (mg/dL)</span><input data-k="lab_rnd" type="number" inputmode="decimal" min="0"></label>
+          <label class="f"><span>جلوكوز صايم (mg/dL)</span><input data-k="lab_fpg" type="number" inputmode="decimal" min="0"></label>
+          <label class="f"><span>جلوكوز بعد ساعتين OGTT (mg/dL)</span><input data-k="lab_ogtt" type="number" inputmode="decimal" min="0"></label>
+          <label class="f"><span>HbA1c (%)</span><input data-k="lab_a1c" type="number" inputmode="decimal" step="0.1" min="0"></label>
+          <label class="f"><span>الكيتونات</span><select data-k="lab_ket"><option value="">—</option><option>سلبي</option><option>أثر</option><option>+</option><option>++</option><option>+++</option></select></label>
+          <label class="f"><span>C-peptide</span><input data-k="lab_cpep" type="text" autocomplete="off"></label>
+        </div>
+        <span class="lab" style="display:block;margin-top:10px">الأجسام المضادة اللي طلعت إيجابية</span>
+        <div class="chks" id="c-ab"></div>
+        <div class="box" id="whoBox"><b>مقارنة بمعايير WHO <span class="src who">WHO</span></b><ul class="flags" id="whoList"></ul><p class="muted" style="margin:8px 0 0;font-size:.84rem">تقييم آلي بسيط، مش بديل عن تقييم الدكتور.</p></div>
+      </div></details>
+
+      <details><summary>التاريخ المرضي والعائلي</summary><div class="body">
+        <span class="lab">تاريخ عائلي</span>
+        <div class="chks" id="c-fam"></div>
+        <div class="fg" style="margin-top:10px">
+          <label class="f wide"><span>أمراض أو عمليات سابقة</span><textarea data-k="pmh"></textarea></label>
+          <label class="f wide"><span>حساسية (أدوية أو أكل)</span><input data-k="allergy" type="text" autocomplete="off"></label>
+          <label class="f wide"><span>أدوية أخرى بياخدها</span><input data-k="otherMeds" type="text" autocomplete="off"></label>
+          <label class="f wide"><span>الأكل والنشاط اليومي</span><textarea data-k="lifestyle"></textarea></label>
+          <label class="f wide"><span>المدرسة والمتابعة فيها</span><textarea data-k="school"></textarea></label>
+        </div>
+      </div></details>
+
+      <details><summary>خطة العلاج الحالية (زي ما حددها الفريق)</summary><div class="body">
+        <p class="muted" style="margin:0">للتسجيل بس. الجرعات والتعديلات قرار فريق السكر.</p>
+        <div class="fg">
+          <label class="f"><span>النظام</span><select data-k="reg"><option value="">—</option><option>حقن متعددة يومياً</option><option>مضخة إنسولين</option><option>نظام خليط</option></select></label>
+          <label class="f"><span>المتابعة</span><select data-k="mon"><option value="">—</option><option>جلوكوميتر</option><option>حساس مستمر CGM</option></select></label>
+          <label class="f"><span>جلوكاجون في البيت</span><select data-k="gluc"><option value="">—</option><option>متوفر</option><option>مش متوفر</option></select></label>
+          <label class="f wide"><span>أنواع الإنسولين المستخدمة</span><input data-k="ins" type="text" autocomplete="off"></label>
+        </div>
+      </div></details>
+    </div>
+
+    <h2 class="sec-t">ثانياً: المتابعة الدورية (Follow-up)</h2>
+    <div class="card">
+      <h2>تسجيل زيارة جديدة</h2>
+      <div class="fg" id="vform">
+        <label class="f"><span>تاريخ الزيارة</span><input id="v_date" type="date"></label>
+        <label class="f"><span>الوزن (كجم)</span><input id="v_w" type="number" inputmode="decimal" step="0.1" min="0"></label>
+        <label class="f"><span>الطول (سم)</span><input id="v_h" type="number" inputmode="decimal" step="0.1" min="0"></label>
+        <label class="f"><span>الضغط الانقباضي</span><input id="v_sys" type="number" inputmode="numeric" min="0"></label>
+        <label class="f"><span>الضغط الانبساطي</span><input id="v_dia" type="number" inputmode="numeric" min="0"></label>
+        <label class="f"><span>HbA1c (%)</span><input id="v_a1c" type="number" inputmode="decimal" step="0.1" min="0"></label>
+        <label class="f"><span>الوقت في المدى TIR (%)</span><input id="v_tir" type="number" inputmode="numeric" min="0" max="100"></label>
+        <label class="f"><span>مرات هبوط أقل من 70 من آخر زيارة</span><input id="v_hypo" type="number" inputmode="numeric" min="0"></label>
+        <label class="f"><span>هبوط شديد احتاج مساعدة</span><input id="v_sev" type="number" inputmode="numeric" min="0"></label>
+        <label class="f"><span>دخول مستشفى أو DKA</span><input id="v_dka" type="number" inputmode="numeric" min="0"></label>
+        <label class="f"><span>أماكن الحقن</span><select id="v_inj"><option value="">—</option><option>سليمة</option><option>فيها تكتلات</option></select></label>
+        <label class="f"><span>الزيارة الجاية</span><input id="v_next" type="date"></label>
+      </div>
+      <span class="lab" style="display:block;margin-top:10px">فحوصات اتعملت في الزيارة دي</span>
+      <div class="chks" id="c-scr"></div>
+      <div class="fg"><label class="f wide"><span>ملاحظات</span><textarea id="v_note"></textarea></label></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="vAdd" type="button">إضافة الزيارة</button><span class="muted" id="vMsg" aria-live="polite"></span></div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>منحنى HbA1c</h2>
+      <div class="chart" id="chart"></div>
+      <p class="muted" style="margin:4px 0 0;font-size:.84rem">الخط المنقّط هو الهدف العام للأطفال (أقل من 7%) <span class="src ispad">ISPAD</span>. الدكتور بيحدد هدف مناسب لكل طفل.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>الزيارات السابقة</h2>
+      <div class="tbl"><table id="vTbl"><thead><tr><th>التاريخ</th><th>الوزن</th><th>الطول</th><th>BMI</th><th>الضغط</th><th>HbA1c</th><th>TIR</th><th>هبوط</th><th>شديد</th><th>DKA</th><th>الفحوصات</th><th>ملاحظات</th><th></th></tr></thead><tbody></tbody></table></div>
+      <p class="muted" id="vNone" style="margin:8px 0 0">مفيش زيارات مسجّلة.</p>
+    </div>
+
+    <h2 class="sec-t">ثالثاً: سجل قراءات السكر اليومي</h2>
+    <div class="card">
+      <h2>قراءة جديدة</h2>
+      <div class="fg">
+        <label class="f"><span>وقت القراءة</span><input id="g_t" type="datetime-local"></label>
+        <label class="f"><span>القراءة (mg/dL)</span><input id="g_v" type="number" inputmode="numeric" min="10" max="800"></label>
+        <label class="f"><span>الظرف</span><select id="g_ctx"></select></label>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="gAdd" type="button">إضافة القراءة</button><span class="muted" id="gMsg" aria-live="polite"></span></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">ملخص القراءات</h2>
+        <select id="g_rng" class="sel" style="width:auto" aria-label="المدة"><option value="7">آخر 7 أيام</option><option value="14" selected>آخر 14 يوم</option><option value="30">آخر 30 يوم</option></select></div>
+      <div id="gSum" style="margin-top:10px"></div>
+      <div class="chart" id="gChart"></div>
+    </div>
+    <div class="card" style="margin-top:12px"><h2>آخر القراءات</h2><ul class="glist" id="gList"></ul></div>
+  </div>
+</main>
+
+<!-- ============ الجسم والكيمياء ============ -->
+<main id="v-body" class="view" hidden>
+  <h2 class="sec-t">التشريح والفسيولوجيا والكيمياء</h2>
+  <p class="lead">شرح مبسط لأهم الأجزاء اللي بتفهّمك السكر بيحصل إزاي. كل علامة <span class="src who">WHO</span> أو <span class="src ispad">ISPAD</span> جنب المعلومة بتقولك مصدرها، والباقي معلومات أساسية متفق عليها في كتب التشريح والفسيولوجيا.</p>
+  <div id="btopics"></div>
+</main>
+
+<!-- ============ المساعد ============ -->
+<main id="v-ask" class="view" hidden>
+  <section class="bot" id="botbox" aria-label="المساعد الذكي">
+    <div class="bot-h">
+      <h2>اسأل المساعد</h2>
+      <p>بيجاوبك بالمصري عن سكر الأطفال، وبيرجع لمواضيع الموقع قبل ما يرد. مش بيحدد جرعات إنسولين ومش بديل لدكتورك.</p>
+    </div>
+    <label class="ctx" id="ctxRow"><input type="checkbox" id="useCtx" disabled><span>خلّي المساعد يعتبر بيانات الطفل المختار من السجل (العمر ومدة المرض وآخر زيارة، من غير الاسم). <span class="muted" id="ctxHint">اختار طفل في سجل المريض الأول.</span></span></label>
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <div class="sugs" id="sugs"></div>
+    <form class="ask" id="form">
+      <input id="q" type="text" placeholder="اكتب سؤالك… مثلاً: ابني سكره 60 أعمل إيه؟" autocomplete="off">
+      <button class="btn" id="send" type="submit">اسأل</button>
+    </form>
+    <div class="bot-n"><span>الإجابات بتتولد بالذكاء الاصطناعي وممكن تحتوي على أخطاء. في الطوارئ اتصل بـ 123.</span><button id="clear" type="button">مسح المحادثة</button></div>
+  </section>
+</main>
+
+<!-- ============ أدوات ============ -->
+<main id="v-tools" class="view" hidden>
+  <h2 class="sec-t">أدوات سريعة</h2>
+  <div class="tools">
+    <div class="card tool">
+      <h2>تحويل وحدة السكر</h2>
+      <label for="mg">mg/dL</label><input id="mg" type="number" inputmode="decimal" placeholder="مثلاً 126">
+      <label for="mm">mmol/L</label><input id="mm" type="number" inputmode="decimal" step="0.1" placeholder="مثلاً 7">
+      <div class="out" id="cvOut"></div>
+    </div>
+    <div class="card tool">
+      <h2>التراكمي HbA1c ومتوسط السكر</h2>
+      <label for="a1c">HbA1c (%)</label><input id="a1c" type="number" inputmode="decimal" step="0.1" placeholder="مثلاً 7.5">
+      <div class="out" id="a1cOut"></div>
+    </div>
+  </div>
+</main>
+
+<main id="v-sources" class="view" hidden>
+  <h2 class="sec-t">المصادر والمراجعة الطبية</h2>
+  <p class="lead">هنا بنوضّح كل معلومة جاية منين، وحالة المراجعة الطبية للموقع.</p>
+  <div class="card low">
+    <h2>حالة المراجعة الطبية</h2>
+    <p style="margin:0">المحتوى <b>لسه ما اتراجعش</b> من دكتور متخصص. لا تعتمد عليه في أي قرار علاجي قبل المراجعة.</p>
+    <div class="rev">
+      <div class="ln"><span>الدكتور المراجع</span><span>........................................</span></div>
+      <div class="ln"><span>التخصص</span><span>........................................</span></div>
+      <div class="ln"><span>تاريخ المراجعة</span><span>........................................</span></div>
+    </div>
+  </div>
+  <h2 class="sec-t">كل معلومة ومصدرها</h2>
+  <div class="srcgrid">
+    <div class="srcrow"><span>تعريف النوع الأول وإنه محتاج إنسولين يومياً، وإن سببه غير معروف</span><span class="src who">WHO</span><small>WHO Diabetes fact sheet</small></div>
+    <div class="srcrow"><span>معايير التشخيص: جلوكوز صايم 7.0 mmol/L، بعد ساعتين 11.1، HbA1c 6.5%</span><span class="src who">WHO</span><small>WHO 2019 (تصنيف السكر)، وتقرير WHO/NCD/NCS/99.2 (1999). الأرقام اتراجعت من نصوص منشورة لتقارير WHO ومراجع ثانوية بتنقل عنها، مش من النص الأصلي مباشرة.</small></div>
+    <div class="srcrow"><span>التشخيص عند الأطفال بيتأكد بسرعة والإنسولين يبدأ فوراً</span><span class="src who">WHO</span><small>تقرير WHO/NCD/NCS/99.2 (1999)</small></div>
+    <div class="srcrow"><span>جلوكوز صايم الطبيعي أقل من 6.1 mmol/L واضطراب سكر الصيام 6.1–6.9</span><span class="src who">WHO</span><small>تصنيف WHO للسكر</small></div>
+    <div class="srcrow"><span>هدف HbA1c أقل من 7% عند الأطفال، وهدف الوقت في المدى (TIR)</span><span class="src ispad">ISPAD</span><small>إرشادات ISPAD للممارسة السريرية، ومعايير ADA</small></div>
+    <div class="srcrow"><span>تعريف الهبوط (أقل من 70 و 54 mg/dL) وقاعدة الـ 15</span><span class="src ispad">ISPAD</span><small>ISPAD و ADA</small></div>
+    <div class="srcrow"><span>تعريف الحموضة الكيتونية (pH أقل من 7.3 أو بيكربونات أقل من 18)</span><span class="src ispad">ISPAD</span><small>إرشادات ISPAD عن الحموضة الكيتونية</small></div>
+    <div class="srcrow"><span>التشريح والفسيولوجيا والكيمياء (البنكرياس، الإنسولين، الكيتونات)</span><span class="src mixed">كتب مرجعية</span><small>معلومات أساسية متفق عليها في كتب التشريح والفسيولوجيا والكيمياء الحيوية، مش منسوبة لـ WHO.</small></div>
+    <div class="srcrow"><span>نصايح المدرسة والرياضة ورمضان وأيام المرض</span><span class="src mixed">إرشادات عامة</span><small>ملخصات عامة من إرشادات دولية وممارسات شائعة. تحتاج مراجعة الفريق المعالج.</small></div>
+  </div>
+  <h2 class="sec-t">الروابط</h2>
+  <div class="card"><ol style="margin:0;padding-inline-start:1.3em">
+    <li><a href="https://www.who.int/news-room/fact-sheets/detail/diabetes" target="_blank" rel="noopener">WHO: Diabetes fact sheet</a></li>
+    <li><a href="https://www.who.int/publications/i/item/classification-of-diabetes-mellitus" target="_blank" rel="noopener">WHO: Classification of diabetes mellitus (2019)</a></li>
+    <li><a href="https://www.staff.ncl.ac.uk/philip.home/who_dmg.pdf" target="_blank" rel="noopener">WHO/NCD/NCS/99.2 (نسخة منشورة على موقع جامعة)</a></li>
+    <li><a href="https://www.ispad.org/" target="_blank" rel="noopener">ISPAD Clinical Practice Consensus Guidelines</a></li>
+  </ol></div>
+  <p class="muted" style="font-size:.86rem">آخر تحديث للمحتوى: 6 نوفمبر 2026.</p>
+</main>
+
+<div class="note"><b>تنبيه مهم:</b> المعلومات هنا تعليمية بس، ومش بديل عن فريق السكر المعالج. جرعات الإنسولين وخطة الأكل والأهداف بتتحدد لكل طفل على حدة مع الدكتور. في الطوارئ اتصل بالإسعاف <b>123</b>.</div>
+<footer>
+  <b>المصادر:</b> معايير التشخيص ومعلومات النوع الأول من منظمة الصحة العالمية. أهداف HbA1c والهبوط عند الأطفال من إرشادات ISPAD و ADA. راجع الدكتور قبل أي قرار علاجي.
+  <ol>
+    <li><a href="https://www.who.int/news-room/fact-sheets/detail/diabetes" target="_blank" rel="noopener">WHO: Diabetes fact sheet</a></li>
+    <li><a href="https://www.who.int/publications/i/item/classification-of-diabetes-mellitus" target="_blank" rel="noopener">WHO: Classification of diabetes mellitus (2019)</a></li>
+    <li><a href="https://www.staff.ncl.ac.uk/philip.home/who_dmg.pdf" target="_blank" rel="noopener">WHO/NCD/NCS/99.2: Definition, diagnosis and classification of diabetes mellitus (نسخة منشورة على موقع جامعة)</a></li>
+    <li><a href="https://www.ispad.org/" target="_blank" rel="noopener">ISPAD Clinical Practice Consensus Guidelines</a></li>
+  </ol>
+</footer>
+</div>
+
+<div id="sosOv" class="sos-ov" role="dialog" aria-label="وضع الطوارئ" hidden>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between"><h2>وضع الطوارئ</h2><button id="sosClose" class="btn sm" type="button">إغلاق</button></div>
+    <div class="call"><div><small>الإسعاف في مصر</small><b>123</b></div><a href="tel:123">اتصل</a></div>
+    <div class="card low">
+      <h2>الطفل واعي ويبلع، والسكر أقل من 70</h2>
+      <ol><li>اديله 15 جم سكر سريع: نص كوب عصير أو 3–4 أقراص جلوكوز.</li><li>استنى 15 دقيقة وقِس تاني.</li><li>لسه واطي؟ كرر. لما يتظبط اديله وجبة خفيفة.</li></ol>
+    </div>
+    <div class="card hi">
+      <h2>مش واعي أو بيتشنج أو مش قادر يبلع</h2>
+      <ol><li><b>اتصل بالإسعاف 123 فوراً.</b></li><li>وضعه على جنبه.</li><li>ماتحطش أكل أو شرب في بقه.</li><li>اديله الجلوكاجون لو متوفر ومتعلم عليه.</li></ol>
+    </div>
+    <div class="card hi">
+      <h2>سكر عالي مع قيء أو ألم بطن أو نفَس عميق وسريع أو نعاس</h2>
+      <ul><li><b>روح أقرب مستشفى فوراً.</b></li><li>ماتوقفش الإنسولين الطويل من نفسك.</li><li>بلّغ فريق السكر في الطريق.</li></ul>
+    </div>
+  </div>
+</div>
+
+<button id="fab" class="fab" type="button" aria-label="افتح المساعد الذكي" aria-expanded="false" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H10l-4 4v-4H4z"/><path d="M8.500 9.500h7M8.500 12.500h4"/></svg><span>اسأل المساعد</span>
+</button>
+<div id="drawer" class="drawer" role="dialog" aria-label="المساعد الذكي" hidden>
+  <button id="dClose" class="dclose" type="button" aria-label="إغلاق">×</button>
+  <div id="dHost" style="height:100%"></div>
+</div>
+
+<script>
+/* ---------- guide topics ---------- */
+const T=[
+{id:'what',t:'إيه هو السكر من النوع الأول؟',h:`
+<p>جهاز المناعة بيهاجم بالغلط الخلايا اللي بتصنع الإنسولين في البنكرياس (خلايا بيتا). مع الوقت الجسم بيفقد القدرة على إنتاج الإنسولين، فالطفل محتاج إنسولين من برّه طول العمر. الإنسولين هو المفتاح اللي بيدخّل السكر من الدم للخلايا عشان تاخد طاقة.</p>
+<div class="box"><b>مهم تعرفه:</b><ul>
+<li>ماحدش سبب المرض: لا الأكل الحلو ولا قلة اهتمام ولا الخوف.</li>
+<li>مش بيتعدّي من طفل لطفل.</li>
+<li>الوراثة ليها دور، لكن أغلب الأطفال المصابين مفيش في عيلتهم حد عنده نفس النوع.</li>
+<li>بيظهر في أي سن، حتى الرضّع، وأكتر في سن المدرسة وبداية البلوغ.</li></ul></div>
+<h3>الفرق بينه وبين النوع التاني</h3>
+<div class="tbl"><table><tr><th></th><th>النوع الأول</th><th>النوع التاني</th></tr>
+<tr><td>السبب</td><td>هجوم مناعي يدمّر خلايا الإنسولين</td><td>مقاومة للإنسولين مع نقص نسبي</td></tr>
+<tr><td>الإنسولين</td><td>ناقص جداً أو معدوم</td><td>موجود لكن مش بيشتغل كويس</td></tr>
+<tr><td>الظهور</td><td>سريع غالباً (أسابيع)</td><td>بطيء غالباً (سنين)</td></tr>
+<tr><td>العلاج</td><td>إنسولين دايماً</td><td>نمط حياة وأدوية، وساعات إنسولين</td></tr></table></div>`},
+{id:'dx',t:'الأعراض والتشخيص',h:`
+<h3>الأعراض الشائعة</h3>
+<ul><li>تبوّل كتير، وطفل كان جاف بالليل بيبلّل السرير تاني</li><li>عطش شديد</li><li>نزول وزن رغم الأكل، وجوع زيادة</li><li>تعب وخمول وعصبية</li><li>جلد جاف وعدوى فطرية متكررة</li></ul>
+<div class="box hi"><b>علامات خطر (حموضة كيتونية DKA):</b> غثيان وقيء وألم بطن، نفَس عميق وسريع، رائحة فواكه في النفَس، نعاس شديد. دي حالة طوارئ، روح أقرب مستشفى فوراً. ناس كتير بيتشخّصوا لأول مرة وهم في DKA، فماتستناش لو لقيت الأعراض.</div>
+<h3>معايير التشخيص <span class="src who">WHO</span></h3>
+<div class="tbl"><table><tr><th>الفحص</th><th>mmol/L</th><th>mg/dL</th></tr>
+<tr><td>جلوكوز صايم (8 ساعات صيام على الأقل)</td><td>7.0 أو أكتر</td><td>126 أو أكتر</td></tr>
+<tr><td>جلوكوز بعد ساعتين من تحميل 75 جم جلوكوز (OGTT)</td><td>11.1 أو أكتر</td><td>200 أو أكتر</td></tr>
+<tr><td>جلوكوز عشوائي مع أعراض السكر</td><td>11.1 أو أكتر</td><td>200 أو أكتر</td></tr>
+<tr><td>HbA1c</td><td colspan="2">6.5% (48 mmol/mol) أو أكتر</td></tr></table></div>
+<ul><li>لو مفيش أعراض واضحة، التشخيص محتاج تأكيد بفحص تاني.</li>
+<li>جلوكوز صايم من 6.1 لـ 6.9 mmol/L (110–125 mg/dL) معناه اضطراب في سكر الصيام، ومش تشخيص سكر.</li>
+<li>HbA1c مش بيتعمل عليه الاعتماد لوحده لو الأعراض بدأت من أسابيع قليلة، ولا في حالات زي الأنيميا أو نزيف حديث. وقتها بيتعتمد على جلوكوز الدم.</li>
+<li>عند الأطفال التشخيص بيتأكد غالباً بسرعة بقياس الجلوكوز، والإنسولين بيبدأ فوراً، وساعات بيكون إنقاذ حياة (حسب تقرير WHO).</li>
+<li>الدكتور ممكن يطلب أجسام مضادة (زي anti-GAD) وتحليل C-peptide لتأكيد إن النوع هو الأول.</li></ul>`},
+{id:'insulin',t:'الإنسولين: أنواعه وطرق الحقن',h:`
+<h3>الأنواع حسب سرعة المفعول</h3>
+<div class="tbl"><table><tr><th>النوع</th><th>دوره</th></tr>
+<tr><td>سريع المفعول</td><td>مع الأكل ولتصحيح السكر العالي</td></tr>
+<tr><td>قصير المفعول</td><td>قبل الوجبات بوقت أطول شوية</td></tr>
+<tr><td>متوسط أو طويل المفعول (الأساسي)</td><td>تغطية الجسم على مدار اليوم، حتى من غير أكل</td></tr></table></div>
+<h3>نظم العلاج</h3>
+<ul><li><b>حقن متعددة يومياً:</b> إنسولين أساسي + حقنة مع كل وجبة، بأقلام إنسولين غالباً.</li><li><b>مضخة إنسولين:</b> جهاز بيدّي إنسولين سريع باستمرار وجرعات مع الأكل. الأنظمة الأحدث بتتواصل مع حساس السكر وبتظبط تلقائياً، وبتفيد الأطفال جداً.</li></ul>
+<h3>نقاط عملية</h3>
+<ul><li>بدّل مكان الحقن (البطن، الفخذ، الذراع، الأرداف) عشان مايتكوّنش تكتل تحت الجلد بيخلي الامتصاص غير ثابت.</li><li>إبر الأقلام القصيرة (4–6 مم) مناسبة للأطفال عادة، وغيّر الإبرة كل مرة حسب نصيحة الفريق.</li><li>خزّن الإنسولين الجديد في التلاجة (مش فريزر)، والمستخدم حالياً بالشروط اللي في النشرة، وبعيد عن الشمس وعربية ساخنة.</li><li>ماتغيّرش الجرعة أو تتخطاها من نفسك. الجرعات بيحددها الفريق.</li></ul>
+<div class="box"><b>فترة شهر العسل:</b> بعد التشخيص ساعات احتياج الإنسولين بيقل مؤقتاً شهور. ده مش معناه إن المرض راح، والإنسولين لسه لازم.</div>`},
+{id:'monitor',t:'متابعة السكر: الجلوكوميتر والحساس',h:`
+<ul><li><b>القياس بالإصبع:</b> قبل الوجبات وقبل النوم، ولما تظهر أعراض، وقبل وبعد الرياضة، وفي أي مرض.</li>
+<li><b>حساس السكر المستمر (CGM):</b> حساس صغير على الجلد بيقرا السكر كل بضع دقايق ويدّي تنبيهات للهبوط والارتفاع، ويوريك اتجاه السكر. بيقلل الهبوط المفاجئ ومفيد جداً للأطفال، خصوصاً ليلاً.</li></ul>
+<h3>مصطلحات المتابعة</h3>
+<div class="tbl"><table><tr><th>المقياس</th><th>معناه / الهدف العام</th></tr>
+<tr><td>الوقت في المدى (TIR)</td><td>نسبة الوقت اللي السكر فيه بين 70 و180 mg/dL. المعتاد المستهدف أكتر من 70% من الوقت.</td></tr>
+<tr><td>وقت الهبوط</td><td>أقل من 70 mg/dL: أقل من 4% من الوقت. وأقل من 54: أقل من 1%.</td></tr>
+<tr><td>HbA1c</td><td>متوسط السكر لآخر 2–3 شهور. الهدف العام للأطفال أقل من 7% غالباً، والدكتور بيحدد رقم مناسب لكل طفل.</td></tr></table></div>
+<p>الأرقام دي أهداف عامة، مش درجة نجاح أو فشل. الطفل ممكن يبقى كويس جداً برقم مختلف حسب سنه وطبيعة حياته.</p>
+<div class="box"><b>الكيتونات:</b> قِسها في البول أو الدم لما السكر يعلى عن المعتاد مع مرض أو قيء أو ألم بطن.</div>`},
+{id:'food',t:'الأكل وحساب الكربوهيدرات',h:`
+<p>مفيش "أكل ممنوع" للطفل المصاب. الطفل بياكل زي أصحابه، والإنسولين هو اللي بيتظبط على الأكل. الكربوهيدرات هي أكتر عنصر بيرفع السكر: العيش والرز والمكرونة والبطاطس والفاكهة واللبن والسكريات.</p>
+<h3>حساب الكربوهيدرات</h3>
+<ul><li>الفريق بيعلّمكم تحسبوا جرامات الكربوهيدرات في الوجبة، وبيحددلكم النسبة بين الإنسولين والكربوهيدرات.</li><li>ميزان المطبخ وجداول أخصائي التغذية أدق من التخمين.</li><li>اقرأ الملصق الغذائي: الجرامات الكلية للكربوهيدرات هي المهمة.</li></ul>
+<h3>نصايح عملية</h3>
+<ul><li>وجبات منتظمة، وبروتين وألياف مع الكربوهيدرات بيبطّأوا الارتفاع.</li><li>العصاير والمشروبات السكرية بتخلي السكر يطلع بسرعة، فاحتفظ بيها لعلاج الهبوط غالباً.</li><li>الحلويات في العيد والحفلات مش ممنوعة: بتتحسب وبتتغطى بالإنسولين حسب خطة الفريق.</li><li>الطفل بينمو، فماتعملوش له رجيم تخسيس أو تقليل أكل من غير إشراف.</li></ul>`},
+{id:'hypo',t:'هبوط السكر (Hypoglycemia)',h:`
+<p>الهبوط هو أكتر مشكلة يومية. التعريف: أقل من 70 mg/dL يتعامل معاه فوراً، وأقل من 54 يعتبر هبوط واضح وخطير.</p>
+<h3>الأعراض</h3>
+<ul><li>رعشة وعرق وشحوب وجوع وخفقان</li><li>عصبية أو بكاء بلا سبب أو تغيّر في السلوك</li><li>صداع وتشوش ونعاس وصعوبة تركيز</li><li>عند الرضّع والصغيرين: خمول أو بكاء غريب أو رفض الرضاعة</li></ul>
+<div class="box low"><b>قاعدة الـ 15 للهبوط الخفيف أو المتوسط (طفل واعي وبيبلع):</b><ol>
+<li>اديله 15 جم كربوهيدرات سريعة (نص كوب عصير حوالي 120 مل، أو 3–4 أقراص جلوكوز، أو معلقة كبيرة عسل أو سكر). للصغيرين الدكتور ممكن يحدد كمية أقل.</li>
+<li>قِس بعد 15 دقيقة.</li><li>لو لسه أقل من 70 كرر.</li><li>لما يتظبط ولو الوجبة الجاية بعيدة اديله سناك فيه كربوهيدرات وبروتين.</li></ol>
+<p>الشوكولاتة مش مناسبة للعلاج الأول لأن دهونها بتبطّأ الامتصاص.</p></div>
+<div class="box hi"><b>هبوط شديد (مش قادر يبلع، فاقد الوعي، تشنج):</b><ul>
+<li>ماتحطش أكل أو شرب في بقه.</li><li>وضعه على جنبه (وضع الإفاقة).</li><li>اديله <b>الجلوكاجون</b> (حقنة أو بخاخ أنف) لو متوفر ومتعلم عليه.</li><li>اتصل بالإسعاف <b>123</b>.</li></ul>
+<p>اسأل فريقك عن الجلوكاجون، وعلّم المدرسة والأقارب إزاي بيستخدم.</p></div>
+<h3>الهبوط بالليل</h3>
+<p>حساس السكر بتنبيهاته وقياس قبل النوم بيقللوا مخاطره. اسأل الفريق عن خطة سناك أو تعديل ليلي، ماتغيّرش الجرعة بنفسك.</p>`},
+{id:'high',t:'السكر العالي والكيتونات (DKA)',h:`
+<p>لما الجسم مايلاقيش إنسولين كفاية بيحرق الدهون وبيطلّع كيتونات، وده بيعمل حموضة في الدم (DKA) وهي حالة طوارئ.</p>
+<ul><li>سكر عالي (مثلاً أكتر من 250 mg/dL) مع مرض أو قيء أو ألم بطن: افحص الكيتونات واتصل بالفريق.</li><li><b>علامات DKA:</b> قيء، ألم بطن، نفَس عميق وسريع، جفاف، نعاس. الطفل محتاج مستشفى فوراً.</li><li>أهم وقاية: ماتتخطاش الإنسولين الأساسي أبداً حتى لو الطفل مش بياكل، وراجع الفريق لو مش متأكد.</li><li>الأعطال الشائعة: إبرة مسدودة أو إنسولين اتخزّن غلط أو منتهي، أو انقطاع في المضخة.</li></ul>`},
+{id:'sport',t:'الرياضة والنشاط',h:`
+<p>الرياضة مفيدة جداً للطفل المصاب، وهو يقدر يلعب كورة وسباحة وأي رياضة. المهم التخطيط.</p>
+<ul><li>الرياضة ممكن تهبّط السكر أثناءها وبعدها بساعات (أحياناً لحد اليوم التاني).</li><li>قِس قبل وأثناء وبعد المجهود، وخلّي كربوهيدرات سريعة قريبة.</li><li>لو السكر واطي قبل الرياضة، سناك كربوهيدرات قبل ما يبدأ.</li><li>الجهد القوي القصير ساعات بيرفع السكر مؤقتاً.</li><li>سكر عالي جداً مع كيتونات: ماتتمرنش قبل ما تكلم الفريق.</li><li>الفريق بيحدد أرقام قبل الرياضة مناسبة لطفلك.</li></ul>`},
+{id:'school',t:'المدرسة والرحلات',h:`
+<ul><li>اطلب خطة رعاية مكتوبة مع المدرسة، فيها أرقام التواصل، وإزاي يتعامل المدرسين مع الهبوط والارتفاع.</li><li>الطفل لازم يقدر يقيس ويحقن في مكان آمن ونضيف، ويشرب ويدخل الحمام وياكل سناك وقت ما يحتاج.</li><li>أنسب حد في المدرسة يكون مدرّب (ممرضة أو مشرف) ويعرف الجلوكاجون.</li><li>المدرسين يعرفوا علامات الهبوط، وماينفعش يروح لوحده وهو بيعاني منها.</li><li>في الامتحانات يتقاس قبلها، ويحتاج وقت لو هبط.</li><li>الرحلات والمعسكرات بتحتاج تخطيط: إنسولين زيادة، سكر سريع، خطة مكتوبة، شخص بالغ يعرف الحالة.</li><li>الطفل مايتمّيزش ولا يتعزل: هو مش مريض، هو بيتابع حالته.</li></ul>`},
+{id:'sick',t:'أيام المرض (Sick Days)',h:`
+<ul><li><b>ماتوقفش الإنسولين الأساسي</b> حتى لو الطفل مش بياكل. ساعات السكر بيعلى مع المرض.</li><li>قِس السكر كل 2–3 ساعات، وافحص الكيتونات لو السكر عالي.</li><li>اديله سوائل كتير بجرعات صغيرة متكررة.</li><li>بلّغ الفريق بدري، ومعاك خطة مكتوبة منهم لجرعات التصحيح.</li><li>ماتديش دواء من نفسك: بعض شرابات الكحة فيها سكر.</li></ul>
+<div class="box hi"><b>روح الطوارئ لو:</b> قيء متكرر، مش قادر يشرب، كيتونات متوسطة أو عالية، نفَس سريع وعميق، نعاس شديد، أو ألم بطن مستمر.</div>`},
+{id:'follow',t:'المتابعة الدورية والمضاعفات',h:`
+<ul><li>زيارة الفريق كل حوالي 3 شهور مع HbA1c وتحميل بيانات الحساس أو الجلوكوميتر.</li><li>فحوصات سنوية: النمو والبلوغ، الضغط، دهون الدم، الغدة الدرقية، ومرض السيلياك (حساسية القمح) لأن النوعين أكتر شيوعاً مع السكر النوع الأول.</li><li>فحص العين والكلى والأعصاب بيبدأ عادةً مع سن المراهقة أو بعد سنين من التشخيص حسب توجيه الدكتور.</li><li>فحص القدمين ومواقع الحقن والأسنان.</li></ul>
+<div class="box"><b>رسالة أمل:</b> المضاعفات بتتكوّن بعد سنين من السكر العالي، وتحكّم كويس وفحوصات منتظمة بيقللوا خطرها كتير. أغلب الأطفال اليوم بيعيشوا حياة نشيطة وطبيعية.</div>`},
+{id:'mind',t:'الجانب النفسي والعيلة',h:`
+<ul><li>صدمة التشخيص، والقلق، وإحساس الذنب عند الأهل طبيعي، وبيخف مع الدعم والتعلم.</li><li>الإرهاق من المرض (Diabetes burnout) حقيقي، خصوصاً في المراهقة. اتكلموا بدل اللوم.</li><li>استخدموا أرقام محايدة ("السكر 180") بدل "كويس/وحش".</li><li>الطفل يشارك تدريجياً في الحقن والقياس حسب سنه، مع إشراف الأهل.</li><li>الأخصائي النفسي جزء طبيعي من فريق السكر.</li></ul>
+<div class="box hi"><b>علامات تستاهل كلام عاجل مع الفريق:</b> تخطي متعمد للإنسولين، إخفاء القياسات، خوف زيادة من الأكل أو محاولة تقليل الإنسولين عشان الوزن، حزن شديد أو أفكار إيذاء النفس.</div>`},
+{id:'ages',t:'حسب العمر',h:`
+<h3>الرضّع والصغيرين</h3><p>مش بيعبّروا عن الهبوط، وأكلهم غير منتظم، وجرعاتهم صغيرة جداً. القياس والمتابعة بيتطلبوا يقظة أكتر، والحساس بيساعد جداً.</p>
+<h3>سن المدرسة</h3><p>يبدأ يتعلم إشارات الهبوط ويشارك في القياس. التعاون مع المدرسة مهم.</p>
+<h3>المراهقة</h3><p>هرمونات النمو بتزوّد احتياج الإنسولين، والسكر بيبقى أصعب، وفيه رغبة في الاستقلال. الكحول والتدخين بيزودوا المخاطر، والكحول بالذات بيسبب هبوط خطير متأخر. التحدث بصراحة بدون تخويف أنفع.</p>`},
+{id:'ramadan',t:'رمضان والصيام',h:`
+<ul><li>الأطفال قبل البلوغ مش مطالبين بالصيام.</li><li>المراهق اللي عايز يصوم لازم يكلم الفريق قبل رمضان بأسابيع لتحديد المخاطر وتعديل الخطة.</li><li>الصيام مع النوع الأول بيزوّد خطر الهبوط والجفاف والـ DKA.</li><li>بيتنصح بكسر الصيام فوراً لو السكر أقل من 70 أو أعلى جداً (حوالي 300 mg/dL) أو ظهرت أعراض مرض.</li><li>قياس السكر أثناء الصيام مش بيبطل الصيام.</li></ul>`},
+{id:'myths',t:'خرافات وحقايق',h:`
+<div class="tbl"><table><tr><th>الخرافة</th><th>الحقيقة</th></tr>
+<tr><td>الطفل جاله السكر عشان بيحب الحلويات.</td><td>لأ، السبب مناعي ومالوش علاقة بالأكل.</td></tr>
+<tr><td>الإنسولين بيعمل إدمان.</td><td>الإنسولين هرمون الجسم محتاجه ومش مخدر.</td></tr>
+<tr><td>ممكن يبطّل الإنسولين لو اتحسن.</td><td>لأ. الجسم مابيصنعوش كفاية، ولازم يستمر.</td></tr>
+<tr><td>الأعشاب والعلاجات الشعبية تعالجه.</td><td>مفيش علاج معروف بيغني عن الإنسولين، وإيقافه خطر على الحياة.</td></tr>
+<tr><td>مايقدرش يمارس رياضة أو يسافر أو يشتغل أو يتجوز.</td><td>يقدر، مع التخطيط.</td></tr>
+<tr><td>السكر بيتعدّي.</td><td>لأ.</td></tr></table></div>`}
+];
+
+/* ---------- body / chemistry topics ---------- */
+const B=[
+{id:'pancreas',t:'البنكرياس: مكانه ووظيفته',h:`
+<p>البنكرياس عضو مسطّح في أعلى البطن، وراء المعدة. بيتقسم لرأس (جنب الاثني عشر) وجسم وذيل. وليه شغلتين مختلفتين:</p>
+<ul><li><b>هضمية (الجزء الأكبر):</b> بيصنع إنزيمات بتنزل في الأمعاء وتهضم الأكل.</li>
+<li><b>هرمونية:</b> جزر لانجرهانز، تجمعات صغيرة من الخلايا متفرقة جوه البنكرياس، بتصنع هرمونات بتتحكم في السكر.</li></ul>
+<figure class="fig"><svg viewBox="0 0 360 215" role="img" aria-label="رسم مبسط للبنكرياس وجزيرة لانجرهانز بخلاياها">
+<path class="sv-line" d="M30 66 C6 78 6 142 36 152"/>
+<path class="sv-panc" d="M38 112 C38 80 80 70 120 78 C170 86 218 70 262 60 C278 57 282 72 268 84 C230 110 180 130 120 134 C80 140 38 142 38 112 Z"/>
+<text class="sv b" x="78" y="108" text-anchor="middle">رأس</text>
+<text class="sv b" x="150" y="104" text-anchor="middle">جسم</text>
+<text class="sv b" x="236" y="80" text-anchor="middle">ذيل</text>
+<text class="sv sm" x="22" y="170" text-anchor="start">الاثني عشر</text>
+<circle cx="190" cy="108" r="6" class="sv-surf" stroke="var(--accent)" stroke-width="2"/>
+<line x1="195" y1="112" x2="245" y2="132" class="sv-line"/><line x1="192" y1="114" x2="262" y2="178" class="sv-line"/>
+<circle cx="285" cy="152" r="52" class="sv-surf" stroke="var(--accent)" stroke-width="2"/>
+<circle cx="268" cy="142" r="7" class="sv-beta"/><circle cx="282" cy="134" r="7" class="sv-beta"/><circle cx="296" cy="142" r="7" class="sv-beta"/>
+<circle cx="275" cy="156" r="7" class="sv-beta"/><circle cx="290" cy="156" r="7" class="sv-beta"/><circle cx="260" cy="157" r="7" class="sv-beta"/>
+<circle cx="306" cy="156" r="6" class="sv-alpha"/><circle cx="312" cy="142" r="6" class="sv-alpha"/><circle cx="270" cy="173" r="6" class="sv-alpha"/>
+<circle cx="288" cy="172" r="5" class="sv-delta"/><circle cx="256" cy="130" r="5" class="sv-delta"/>
+<text class="sv sm" x="285" y="208" text-anchor="middle">جزيرة لانجرهانز (مكبّرة)</text>
+<circle cx="24" cy="188" r="5" class="sv-beta"/><text class="sv" x="34" y="192" text-anchor="start">بيتا: إنسولين</text>
+<circle cx="24" cy="203" r="5" class="sv-alpha"/><text class="sv" x="34" y="207" text-anchor="start">ألفا: جلوكاجون</text>
+<circle cx="140" cy="188" r="5" class="sv-delta"/><text class="sv" x="150" y="192" text-anchor="start">دلتا: سوماتوستاتين</text>
+</svg><figcaption>رسم تقريبي للشرح، مش بالمقياس.</figcaption></figure>
+<div class="box"><b>في السكر النوع الأول:</b> المناعة بتدمّر خلايا بيتا بالذات، فالإنسولين بيقل أو بيختفي. الوظيفة الهضمية للبنكرياس بتفضل شغالة في الغالب.</div>`},
+{id:'glucose',t:'الجلوكوز في الجسم',h:`
+<p>الجلوكوز هو الوقود الأساسي للجسم، والمخ بيعتمد عليه بشكل كبير. بيجي من الكربوهيدرات في الأكل، وكمان الكبد بيصنع منه ويخزّنه.</p>
+<h3>بعد الأكل</h3>
+<p>الجلوكوز في الدم بيزيد، فخلايا بيتا بتفرز إنسولين. الإنسولين بيخلّي العضلات والدهون تاخد الجلوكوز، والكبد يخزّن الزيادة على هيئة جلايكوجين.</p>
+<h3>بين الوجبات وأثناء النوم</h3>
+<p>الإنسولين بيقل والجلوكاجون بيزيد، فالكبد بيطلّع جلوكوز من المخزون ويصنع جلوكوز جديد، ويفضل السكر ثابت.</p>
+<div class="tbl"><table><tr><th>الهرمون</th><th>أثره على سكر الدم</th></tr>
+<tr><td>الإنسولين</td><td>بيخفّضه</td></tr>
+<tr><td>الجلوكاجون</td><td>بيرفعه</td></tr>
+<tr><td>الأدرينالين والكورتيزول وهرمون النمو</td><td>بيرفعوه، وبيزيدوا وقت المرض والتوتر والبلوغ</td></tr></table></div>
+<p><span class="src who">WHO</span> جلوكوز الصيام الطبيعي أقل من 6.1 mmol/L (110 mg/dL).</p>`},
+{id:'insulin-act',t:'الإنسولين بيشتغل إزاي',h:`
+<p>الإنسولين زي المفتاح: بيتعلّق بمستقبِل على سطح الخلية، فبوابات الجلوكوز (في العضلات والدهون) بتفتح والجلوكوز يدخل. من غيره السكر بيفضل في الدم والخلايا جعانة.</p>
+<figure class="fig"><svg viewBox="0 0 360 200" role="img" aria-label="مقارنة بين خلية فيها إنسولين وخلية من غير إنسولين">
+<text class="sv b" x="90" y="16" text-anchor="middle">الإنسولين موجود</text>
+<text class="sv b" x="270" y="16" text-anchor="middle">الإنسولين ناقص</text>
+<rect x="12" y="26" width="156" height="62" rx="8" class="sv-tint"/><text class="sv sm" x="150" y="42" text-anchor="middle">الدم</text>
+<rect x="12" y="104" width="156" height="84" rx="14" class="sv-surf" stroke="var(--line)" stroke-width="2"/>
+<text class="sv sm" x="90" y="180" text-anchor="middle">الخلية</text>
+<rect x="76" y="100" width="28" height="9" rx="3" class="sv-beta"/>
+<circle cx="58" cy="82" r="7" class="sv-beta"/><path class="sv-acc" d="M63 87 L76 98"/>
+<circle cx="34" cy="62" r="5.5" class="sv-glu"/><circle cx="130" cy="58" r="5.5" class="sv-glu"/><circle cx="148" cy="72" r="5.5" class="sv-glu"/>
+<circle cx="90" cy="70" r="5.5" class="sv-glu"/><path class="sv-acc" d="M90 78 L90 118"/><path class="sv-acc" d="M84 112 L90 120 L96 112"/>
+<circle cx="64" cy="138" r="5.5" class="sv-glu"/><circle cx="104" cy="152" r="5.5" class="sv-glu"/><circle cx="126" cy="134" r="5.5" class="sv-glu"/>
+<rect x="192" y="26" width="156" height="62" rx="8" class="sv-hi"/><text class="sv sm" x="330" y="42" text-anchor="middle">الدم</text>
+<rect x="192" y="104" width="156" height="84" rx="14" class="sv-surf" stroke="var(--line)" stroke-width="2"/>
+<text class="sv sm" x="270" y="180" text-anchor="middle">الخلية</text>
+<rect x="256" y="100" width="28" height="9" rx="3" fill="var(--line)"/>
+<path class="sv-bad" d="M262 90 L278 108 M278 90 L262 108"/>
+<circle cx="212" cy="56" r="5.5" class="sv-glu"/><circle cx="236" cy="48" r="5.5" class="sv-glu"/><circle cx="296" cy="50" r="5.5" class="sv-glu"/><circle cx="320" cy="58" r="5.5" class="sv-glu"/>
+<circle cx="224" cy="72" r="5.5" class="sv-glu"/><circle cx="250" cy="66" r="5.5" class="sv-glu"/><circle cx="300" cy="72" r="5.5" class="sv-glu"/><circle cx="326" cy="76" r="5.5" class="sv-glu"/><circle cx="272" cy="58" r="5.5" class="sv-glu"/>
+<text class="sv sm" x="270" y="150" text-anchor="middle">مفيش جلوكوز جوه</text>
+</svg><figcaption>الدوائر الصفرا جلوكوز، والدايرة الزرقا إنسولين.</figcaption></figure>
+<ul><li><b>العضلات والدهون:</b> الإنسولين بيدخّل الجلوكوز.</li>
+<li><b>الكبد:</b> بيوقف إنتاج الجلوكوز ويخزّن الزيادة.</li>
+<li><b>الدهون:</b> بيمنع تكسيرها بشكل زايد.</li></ul>`},
+{id:'symptoms-why',t:'ليه الأعراض بتحصل؟',h:`
+<ul><li><b>تبوّل كتير:</b> لما السكر يعدّي حوالي 180 mg/dL (10 mmol/L) الكلى مبتقدرش ترجّعه كله، فبيخرج في البول وبيسحب معاه ميّه.</li>
+<li><b>عطش شديد:</b> تعويض الميّه اللي نزلت، ومع الجفاف.</li>
+<li><b>جوع زيادة ونزول وزن:</b> الخلايا مش واخدة جلوكوز، فالجسم بيحرق دهون وعضلات.</li>
+<li><b>تعب وخمول:</b> نقص الطاقة جوه الخلايا.</li>
+<li><b>غثيان وقيء ونفَس عميق:</b> لما الكيتونات تتراكم (شوف قسم الكيتونات).</li></ul>`},
+{id:'chem',t:'الكيمياء: الجزيئات المهمة',h:`
+<div class="tbl"><table><tr><th>الجزيء</th><th>إيه هو</th></tr>
+<tr><td>الجلوكوز</td><td>سكر بسيط صيغته C₆H₁₂O₆، وزنه الجزيئي حوالي 180 جم/مول.</td></tr>
+<tr><td>الإنسولين</td><td>هرمون بروتيني صغير من 51 حمض أميني، سلسلتين (A و B) متصلتين بجسرين.</td></tr>
+<tr><td>الجلوكاجون</td><td>هرمون من 29 حمض أميني، بيرفع السكر.</td></tr>
+<tr><td>C-peptide</td><td>جزء بيتفرز مع الإنسولين بنفس الكمية، فقياسه بيدل على إنتاج الجسم الذاتي للإنسولين.</td></tr>
+<tr><td>HbA1c</td><td>هيموجلوبين اتلصق بيه جلوكوز، يعكس متوسط السكر لـ 2–3 شهور.</td></tr>
+<tr><td>الكيتونات</td><td>أسيتواسيتات و بيتا-هيدروكسي بيوتيرات وأسيتون، بتتكوّن من تكسير الدهون.</td></tr></table></div>
+<h3>ليه نقسم على 18؟</h3>
+<p>الوزن الجزيئي للجلوكوز حوالي 180، فكل 1 mmol/L يساوي حوالي 18 mg/dL. لذلك: mmol/L = mg/dL ÷ 18. الأداة في تبويب "أدوات" بتحسبها لك.</p>
+<p><span class="src who">WHO</span> الحد التشخيصي لـ HbA1c هو 6.5% (48 mmol/mol).</p>`},
+{id:'ketones',t:'الكيتونات والحموضة (DKA)',h:`
+<p>لما الإنسولين يقل جداً، الجسم بيكسّر الدهون عشان يعمل طاقة، والكبد بيحوّلها لكيتونات. الكيتونات أحماض، فلو اتراكمت بتنزّل حموضة الدم.</p>
+<figure class="fig"><svg viewBox="0 0 360 118" role="img" aria-label="تسلسل من نقص الإنسولين إلى الحموضة الكيتونية">
+<rect x="272" y="30" width="78" height="58" rx="10" class="sv-tint" stroke="var(--line)" stroke-width="1.5"/>
+<text class="sv b" x="311" y="56" text-anchor="middle">نقص</text><text class="sv b" x="311" y="73" text-anchor="middle">الإنسولين</text>
+<rect x="186" y="30" width="78" height="58" rx="10" class="sv-tint" stroke="var(--line)" stroke-width="1.5"/>
+<text class="sv b" x="225" y="56" text-anchor="middle">تكسير</text><text class="sv b" x="225" y="73" text-anchor="middle">الدهون</text>
+<rect x="100" y="30" width="78" height="58" rx="10" class="sv-hi" stroke-width="1.5"/>
+<text class="sv b" x="139" y="64" text-anchor="middle">كيتونات</text>
+<rect x="14" y="30" width="78" height="58" rx="10" class="sv-hi" stroke-width="1.5"/>
+<text class="sv b" x="53" y="56" text-anchor="middle">حموضة</text><text class="sv b" x="53" y="73" text-anchor="middle">الدم</text>
+<path class="sv-acc" d="M270 59 L266 59"/><path class="sv-acc" d="M268 54 L263 59 L268 64"/>
+<path class="sv-acc" d="M184 59 L180 59"/><path class="sv-acc" d="M182 54 L177 59 L182 64"/>
+<path class="sv-acc" d="M98 59 L94 59"/><path class="sv-acc" d="M96 54 L91 59 L96 64"/>
+<text class="sv sm" x="180" y="108" text-anchor="middle">القراءة من اليمين لليسار</text>
+</svg><figcaption>تسلسل الحموضة الكيتونية.</figcaption></figure>
+<ul><li>الـ pH الطبيعي للدم حوالي 7.35–7.45.</li>
+<li><span class="src ispad">ISPAD</span> الحموضة الكيتونية تتأكد بسكر عالي مع كيتونات وانخفاض pH عن 7.3 أو البيكربونات عن 18 mmol/L.</li>
+<li>الأسيتون هو سبب رائحة الفواكه في النفَس.</li></ul>
+<div class="box hi">أي قيء أو ألم بطن أو نفَس عميق مع سكر عالي: مستشفى فوراً.</div>`},
+{id:'a1c-why',t:'HbA1c: ليه بيعكس 2–3 شهور؟',h:`
+<p>الجلوكوز بيلتصق بالهيموجلوبين جوه كرات الدم الحمرا بشكل مش بيرجع. وكرة الدم الحمرا بتعيش حوالي 120 يوم، فنسبة الهيموجلوبين الملتصق بيه جلوكوز بتمثّل متوسط السكر في الشهور الأخيرة.</p>
+<ul><li>الأنيميا أو نزيف حديث أو بعض أنواع الهيموجلوبين ممكن تخلّي القراءة مش دقيقة.</li>
+<li>HbA1c متوسط، ممكن يخبّي هبوط وارتفاع كبير. عشان كده حساس السكر (TIR) بيكمّله.</li></ul>`}
+];
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>{const n=parseFloat(v);return isNaN(n)?null:n};
+const plain=h=>h.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fmtD=s=>{const p=String(s||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0].slice(2):'—'};
+function span(from){const a=new Date(from),t=new Date();if(!from||isNaN(a))return null;let m=(t.getFullYear()-a.getFullYear())*12+t.getMonth()-a.getMonth();if(t.getDate()<a.getDate())m--;return m<0?null:{y:Math.floor(m/12),m:m%12}}
+const spanTxt=s=>{if(!s)return '—';const p=[];if(s.y)p.push(s.y+' سنة');if(s.m||!s.y)p.push(s.m+' شهر');return p.join(' و ')};
+function arm(btn,label,fn){if(btn.dataset.armed){clearTimeout(btn._t);delete btn.dataset.armed;btn.textContent=btn.dataset.orig;fn();return}
+  btn.dataset.orig=btn.textContent;btn.dataset.armed='1';btn.textContent=label;btn._t=setTimeout(()=>{delete btn.dataset.armed;btn.textContent=btn.dataset.orig},3500)}
+
+/* ---------- accordions + tabs ---------- */
+const accordion=(list,pre)=>list.map(x=>`<details id="${pre}-${x.id}"><summary>${x.t}</summary><div class="body">${x.h}</div></details>`).join('');
+$('#topics').innerHTML=accordion(T,'d');
+$('#btopics').innerHTML=accordion(B,'b');
+$('#nav').innerHTML='<button data-go="ask">اسأل المساعد</button>'+T.map(x=>`<button data-go="d-${x.id}">${x.t.split('(')[0].split(':')[0].trim()}</button>`).join('');
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.go==='ask'){location.hash='ask';return}
+  const el=document.getElementById(b.dataset.go);if(!el)return;el.open=true;el.scrollIntoView({behavior:'smooth',block:'start'})};
+const VIEWS=['guide','record','body','ask','tools','sources'];
+let curView='guide';
+const fab=$('#fab'),drawer=$('#drawer'),dHost=$('#dHost'),botbox=$('#botbox');
+function syncFab(){fab.hidden=curView==='ask'||!fab.dataset.ok}
+function openChat(open){drawer.hidden=!open;fab.setAttribute('aria-expanded',open?'true':'false');
+  if(open){dHost.appendChild(botbox);syncCtx();const m=$('#msgs');m.scrollTop=m.scrollHeight;const q=$('#q');if(q&&!q.disabled&&!q.closest('[hidden]'))q.focus()}}
+fab.onclick=()=>openChat(drawer.hidden);
+$('#dClose').onclick=()=>{openChat(false);fab.focus()};
+const sosOv=$('#sosOv');
+function openSos(on){sosOv.hidden=!on;document.documentElement.style.overflow=on?'hidden':'';if(on)$('#sosClose').focus();else $('#sosBtn').focus()}
+$('#sosBtn').onclick=()=>openSos(true);$('#sosClose').onclick=()=>openSos(false);
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!sosOv.hidden){openSos(false)}else if(!drawer.hidden){openChat(false);fab.focus()}});
+function show(v){if(!VIEWS.includes(v))v='guide';curView=v;
+  VIEWS.forEach(x=>{$('#v-'+x).hidden=x!==v;$('#tab-'+x).setAttribute('aria-selected',x===v?'true':'false')});
+  if(v==='ask'){openChat(false);$('#v-ask').appendChild(botbox);syncCtx()}
+  syncFab();window.scrollTo(0,0)}
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+show(location.hash.slice(1));
+$('#tab-'+(VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'guide')).scrollIntoView({inline:'center',block:'nearest'});
+
+/* ---------- converters ---------- */
+const mg=$('#mg'),mm=$('#mm'),cv=$('#cvOut');
+mg.oninput=()=>{const v=parseFloat(mg.value);if(isNaN(v)){mm.value='';cv.textContent='';return}mm.value=(v/18).toFixed(1);cv.textContent=v+' mg/dL = '+(v/18).toFixed(1)+' mmol/L'};
+mm.oninput=()=>{const v=parseFloat(mm.value);if(isNaN(v)){mg.value='';cv.textContent='';return}mg.value=Math.round(v*18);cv.textContent=v+' mmol/L = '+Math.round(v*18)+' mg/dL'};
+const a1c=$('#a1c'),ao=$('#a1cOut');
+a1c.oninput=()=>{const v=parseFloat(a1c.value);if(isNaN(v)||v<3||v>20){ao.textContent='';return}
+  const e=28.7*v-46.7;ao.textContent='متوسط السكر التقريبي: '+Math.round(e)+' mg/dL ('+(e/18).toFixed(1)+' mmol/L)'};
+
+/* ---------- patient record ---------- */
+const SX=[['polyuria','تبوّل كتير'],['polydipsia','عطش شديد'],['wl','نزول وزن'],['polyphagia','جوع زيادة'],['fatigue','تعب وخمول'],['enuresis','تبليل سرير'],['vision','زغللة'],['candida','عدوى فطرية متكررة']];
+const DKAS=[['vomit','قيء'],['abd','ألم بطن'],['kuss','نفَس عميق وسريع'],['drowsy','نعاس أو تغيّر وعي'],['dehyd','جفاف'],['fruity','رائحة فواكه']];
+const FAM=[['t1','سكر نوع أول'],['t2','سكر نوع تاني'],['thy','غدة درقية'],['cel','سيلياك'],['aut','أمراض مناعية أخرى']];
+const AB=[['gad','GAD65'],['ia2','IA-2'],['znt8','ZnT8'],['iaa','IAA'],['none','لم تُفحص']];
+const SCR=[['thy','الغدة الدرقية'],['cel','السيلياك'],['eye','العين'],['alb','زلال البول'],['lip','دهون الدم'],['foot','القدمين']];
+const scrName=Object.fromEntries(SCR);
+const chks=(id,pre,list)=>{$(id).innerHTML=list.map(([k,t])=>`<label class="chk"><input type="checkbox" ${pre?`data-k="${pre}_${k}"`:`data-s="${k}"`}><span>${t}</span></label>`).join('')};
+chks('#c-sx','sx',SX);chks('#c-dka','dka',DKAS);chks('#c-fam','fam',FAM);chks('#c-ab','ab',AB);chks('#c-scr','',SCR);
+
+const LS='sukkar-records-v1';
+let DB={patients:[],sel:null};
+try{const r=localStorage.getItem(LS);if(r){const d=JSON.parse(r);if(d&&Array.isArray(d.patients))DB=d}}catch(e){}
+let st,DL=null;
+function save(){try{localStorage.setItem(LS,JSON.stringify(DB));$('#saveState').textContent='اتحفظ على جهازك في المتصفح ده بس، ومش بيتبعت لأي حد. ماتكتبش الاسم الكامل ولا الرقم القومي: استخدم رمز أو الحروف الأولى.'}
+  catch(e){$('#saveState').textContent='المتصفح ده مش بيسمح بالحفظ التلقائي. استخدم "حفظ نسخة احتياطية" قبل ما تقفل الصفحة.'}}
+const queueSave=()=>{clearTimeout(st);st=setTimeout(save,300)};
+const uid=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const P=()=>DB.patients.find(p=>p.id===DB.sel)||null;
+
+function renderSel(){const s=$('#pSel');
+  s.innerHTML=DB.patients.map((p,i)=>`<option value="${p.id}">${esc(p.h.code||'طفل '+(i+1))}</option>`).join('');
+  if(DB.sel)s.value=DB.sel;
+  const has=DB.patients.length>0;s.hidden=!has;$('#pDel').hidden=!has;$('#pEmpty').hidden=has;$('#pBody').hidden=!has}
+function fill(){const p=P();if(!p)return;
+  document.querySelectorAll('#pform [data-k]').forEach(el=>{const v=p.h[el.dataset.k];if(el.type==='checkbox')el.checked=!!v;else el.value=v==null?'':v})}
+function refresh(){const p=P();if(!p){syncCtx();return}renderStats(p);renderWho(p);renderChart(p);renderVisits(p);renderLog(p);syncCtx()}
+function pick(id){DB.sel=id;renderSel();fill();refresh();queueSave()}
+
+$('#pSel').onchange=e=>pick(e.target.value);
+$('#pNew').onclick=()=>{const p={id:uid(),h:{code:'ط'+(DB.patients.length+1)},visits:[]};DB.patients.push(p);pick(p.id);$('#pform [data-k="code"]').focus()};
+$('#pDel').onclick=function(){arm(this,'تأكيد الحذف؟',()=>{DB.patients=DB.patients.filter(p=>p.id!==DB.sel);DB.sel=DB.patients[0]?DB.patients[0].id:null;renderSel();fill();refresh();queueSave()})};
+$('#pform').addEventListener('input',onP);$('#pform').addEventListener('change',onP);
+function onP(e){const p=P(),el=e.target.closest('[data-k]');if(!p||!el)return;
+  p.h[el.dataset.k]=el.type==='checkbox'?el.checked:el.value;
+  if(el.dataset.k==='code'){const o=$('#pSel').selectedOptions[0];if(o)o.textContent=el.value||'طفل'}
+  renderStats(p);renderWho(p);queueSave()}
+
+function renderWho(p){const h=p.h,L=[],sx=SX.some(([k])=>h['sx_'+k]);
+  const rnd=num(h.lab_rnd),fpg=num(h.lab_fpg),og=num(h.lab_ogtt),a=num(h.lab_a1c);
+  const mm=v=>(v/18).toFixed(1);
+  if(rnd!=null){if(rnd>=200)L.push([sx?'r':'w','جلوكوز عشوائي '+rnd+' mg/dL ('+mm(rnd)+' mmol/L): '+(sx?'يحقق معيار WHO مع وجود الأعراض.':'فوق الحد، لكن من غير أعراض لازم تأكيد بفحص تاني.')])
+    else L.push(['g','جلوكوز عشوائي '+rnd+' mg/dL: أقل من 200.'])}
+  if(fpg!=null){if(fpg>=126)L.push(['r','جلوكوز صايم '+fpg+' mg/dL ('+mm(fpg)+' mmol/L): يحقق معيار WHO (7.0 أو أكتر).'])
+    else if(fpg>=110)L.push(['w','جلوكوز صايم '+fpg+' mg/dL: في نطاق اضطراب سكر الصيام (6.1–6.9 mmol/L)، مش تشخيص سكر.'])
+    else L.push(['g','جلوكوز صايم '+fpg+' mg/dL: أقل من 6.1 mmol/L (طبيعي حسب WHO).'])}
+  if(og!=null){if(og>=200)L.push(['r','جلوكوز بعد ساعتين '+og+' mg/dL ('+mm(og)+' mmol/L): يحقق معيار WHO (11.1 أو أكتر).'])
+    else if(og>=140)L.push(['w','جلوكوز بعد ساعتين '+og+' mg/dL: في نطاق اضطراب تحمّل الجلوكوز (7.8–11.0 mmol/L).'])
+    else L.push(['g','جلوكوز بعد ساعتين '+og+' mg/dL: أقل من 7.8 mmol/L.'])}
+  if(a!=null){if(a>=6.5)L.push(['r','HbA1c '+a+'%: يحقق معيار WHO (6.5% أو أكتر). مايتعتمدش عليه لوحده لو الأعراض بدأت من أسابيع قليلة.'])
+    else L.push(['g','HbA1c '+a+'%: أقل من 6.5%.'])}
+  $('#whoList').innerHTML=L.length?L.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join(''):'<li>اكتب نتيجة تحليل أو أكتر عشان تظهر المقارنة.</li>'}
+
+function renderStats(p){const h=p.h,v=(p.visits||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)),last=v[v.length-1];
+  const lastA=[...v].reverse().find(x=>num(x.a1c)!=null);
+  const S=[['العمر',spanTxt(span(h.dob))],['مدة السكر',spanTxt(span(h.dx))],['آخر HbA1c',lastA?num(lastA.a1c)+'%':'—'],['آخر زيارة',last?fmtD(last.date):'—'],['عدد الزيارات',v.length]];
+  $('#stats').innerHTML=S.map(([k,x])=>`<div class="stat"><small>${k}</small><b>${esc(x)}</b></div>`).join('');
+  const F=[];
+  if(lastA){const a=num(lastA.a1c);F.push(a<7?['g','آخر HbA1c ('+a+'%) ضمن الهدف العام للأطفال (أقل من 7%) حسب ISPAD.']:['w','آخر HbA1c ('+a+'%) أعلى من الهدف العام للأطفال (أقل من 7%) حسب ISPAD. الفريق بيحدد الهدف المناسب للطفل.'])}
+  if(last){if(num(last.sev)>0)F.push(['r','آخر زيارة سجّلت هبوط شديد احتاج مساعدة. بلّغ الفريق.']);
+    if(num(last.dka)>0)F.push(['r','آخر زيارة سجّلت دخول مستشفى أو حموضة كيتونية. اتأكد إن الفريق عارف.']);
+    if(last.inj==='فيها تكتلات')F.push(['w','فيه تكتلات في أماكن الحقن: بدّل الأماكن واعرضها على الفريق.'])}
+  if(v.length){const done=new Set();v.forEach(x=>(x.scr||[]).forEach(k=>done.add(k)));const miss=SCR.filter(([k])=>!done.has(k)).map(([,t])=>t);
+    if(miss.length)F.push(['w','لسه ماتسجّلش في الزيارات: '+miss.join('، ')+'. اسأل الفريق عن مواعيدها.'])}
+  if(!v.length)F.push(['','سجّل أول زيارة متابعة عشان تظهر الملاحظات هنا.']);
+  $('#flags').innerHTML=F.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join('')}
+
+function renderChart(p){const el=$('#chart');
+  const pts=(p.visits||[]).filter(x=>num(x.a1c)!=null&&x.date).map(x=>({d:new Date(x.date).getTime(),y:num(x.a1c),date:x.date})).sort((a,b)=>a.d-b.d);
+  if(!pts.length){el.innerHTML='<p class="muted" style="margin:0">سجّل HbA1c في زيارة أو أكتر عشان يظهر المنحنى.</p>';return}
+  const W=360,H=170,L=34,R=16,TP=16,BT=28,vals=pts.map(q=>q.y);
+  const lo=Math.min(5,Math.floor(Math.min(...vals))),hi=Math.max(9,Math.ceil(Math.max(...vals)));
+  const t0=pts[0].d,t1=pts[pts.length-1].d;
+  const X=d=>t1===t0?(L+W-R)/2:L+(d-t0)/(t1-t0)*(W-L-R),Y=v=>TP+(hi-v)/(hi-lo)*(H-TP-BT);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="منحنى HbA1c عبر الزيارات">`;
+  for(let g=lo;g<=hi;g++)s+=`<line class="cg" x1="${L}" x2="${W-R}" y1="${Y(g)}" y2="${Y(g)}"/><text class="ct" x="${L-6}" y="${Y(g)+4}" text-anchor="end">${g}</text>`;
+  s+=`<line class="cd" x1="${L}" x2="${W-R}" y1="${Y(7)}" y2="${Y(7)}"/>`;
+  s+=`<polyline class="cl" points="${pts.map(q=>X(q.d).toFixed(1)+','+Y(q.y).toFixed(1)).join(' ')}"/>`;
+  pts.forEach(q=>{s+=`<circle class="cp" cx="${X(q.d).toFixed(1)}" cy="${Y(q.y).toFixed(1)}" r="4"/><text class="cv" x="${X(q.d).toFixed(1)}" y="${(Y(q.y)-9).toFixed(1)}" text-anchor="middle">${q.y}</text>`});
+  s+=`<text class="ct" x="${X(t0)}" y="${H-8}" text-anchor="${t1===t0?'middle':'start'}">${fmtD(pts[0].date)}</text>`;
+  if(t1!==t0)s+=`<text class="ct" x="${X(t1)}" y="${H-8}" text-anchor="end">${fmtD(pts[pts.length-1].date)}</text>`;
+  el.innerHTML=s+'</svg>'}
+
+function renderVisits(p){const v=(p.visits||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)),tb=$('#vTbl tbody');
+  $('#vNone').hidden=v.length>0;
+  tb.innerHTML=v.map(x=>{const w=num(x.w),h=num(x.h),bmi=w&&h?(w/((h/100)**2)).toFixed(1):'—';
+    return `<tr><td>${fmtD(x.date)}</td><td>${esc(x.w||'—')}</td><td>${esc(x.h||'—')}</td><td>${bmi}</td><td>${x.sys&&x.dia?esc(x.sys+'/'+x.dia):'—'}</td><td>${x.a1c?esc(x.a1c)+'%':'—'}</td><td>${x.tir?esc(x.tir)+'%':'—'}</td><td>${esc(x.hypo||'—')}</td><td>${esc(x.sev||'—')}</td><td>${esc(x.dka||'—')}</td><td>${(x.scr||[]).map(k=>scrName[k]).filter(Boolean).join('، ')||'—'}</td><td>${esc(x.note||'')}</td><td><button class="btn sm danger" type="button" data-del="${x.id}">حذف</button></td></tr>`}).join('')}
+$('#vTbl').onclick=e=>{const b=e.target.closest('[data-del]');if(!b)return;
+  arm(b,'تأكيد؟',()=>{const p=P();p.visits=p.visits.filter(x=>x.id!==b.dataset.del);refresh();queueSave()})};
+$('#vAdd').onclick=()=>{const p=P();if(!p)return;const g=id=>$('#'+id).value.trim(),msg=$('#vMsg');
+  if(!g('v_date')){msg.textContent='اكتب تاريخ الزيارة الأول.';$('#v_date').focus();return}
+  const a=num(g('v_a1c'));if(a!=null&&(a<3||a>20)){msg.textContent='قيمة HbA1c غير منطقية، راجعها.';$('#v_a1c').focus();return}
+  const scr=[...document.querySelectorAll('#c-scr [data-s]:checked')].map(c=>c.dataset.s);
+  p.visits.push({id:uid(),date:g('v_date'),w:g('v_w'),h:g('v_h'),sys:g('v_sys'),dia:g('v_dia'),a1c:g('v_a1c'),tir:g('v_tir'),hypo:g('v_hypo'),sev:g('v_sev'),dka:g('v_dka'),inj:g('v_inj'),next:g('v_next'),scr,note:g('v_note')});
+  document.querySelectorAll('#vform input,#vform select,#v_note').forEach(el=>{el.value=''});
+  document.querySelectorAll('#c-scr input').forEach(c=>c.checked=false);
+  $('#v_date').value=today();msg.textContent='اتسجّلت الزيارة.';refresh();queueSave()};
+$('#v_date').value=today();
+
+$('#pExample').onclick=()=>{const p={id:uid(),h:{code:'مثال (بيانات تجريبية)',sex:'أنثى',dob:'2015-03-10',dx:'2023-09-05',feed:'طبيعية',sxw:'3',dkaDx:'لأ',sx_polyuria:true,sx_polydipsia:true,sx_wl:true,sx_fatigue:true,lab_rnd:'412',lab_fpg:'',lab_ogtt:'',lab_a1c:'11.2',lab_ket:'++',ab_gad:true,ab_ia2:true,fam_thy:true,reg:'حقن متعددة يومياً',mon:'جلوكوميتر',gluc:'متوفر',pmh:'لا يوجد'},
+  visits:[{id:uid(),date:'2023-12-10',w:'28.5',h:'133',sys:'100',dia:'62',a1c:'8.4',tir:'',hypo:'3',sev:'0',dka:'0',inj:'سليمة',scr:['thy','cel'],note:'بداية متابعة'},
+  {id:uid(),date:'2024-03-12',w:'29.8',h:'134.5',sys:'102',dia:'64',a1c:'7.6',tir:'',hypo:'2',sev:'0',dka:'0',inj:'سليمة',scr:[],note:''},
+  {id:uid(),date:'2024-06-18',w:'30.6',h:'135.6',sys:'101',dia:'63',a1c:'7.1',tir:'',hypo:'4',sev:'0',dka:'0',inj:'فيها تكتلات',scr:['eye'],note:'تغيير أماكن الحقن'}]};
+  const vals=[112,95,180,240,66,130,150,205,88,120,170,52,140,110,98,230,125,160,75,135],cx=['صايم','قبل الأكل','بعد الأكل','قبل النوم'];
+  p.log=vals.map((v,i)=>{const d=new Date(Date.now()-(i*13+2)*36e5),z=n=>String(n).padStart(2,'0');
+    return{id:uid(),t:d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes()),v,c:cx[i%4]}});
+  DB.patients.push(p);pick(p.id)};
+
+(async()=>{try{const dl=await window.claude?.use('downloads');if(!dl)return;DL=dl;$('#sumExport').hidden=false;const b=$('#pExport');b.hidden=false;
+  b.onclick=async()=>{try{await dl.save({filename:'sukkar-records.json',data:JSON.stringify(DB,null,1)})}catch(e){if(e&&e.code!=='declined')$('#saveState').textContent='تعذّر حفظ النسخة الاحتياطية.'}}}catch(e){}})();
+$('#pImport').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||!Array.isArray(d.patients))throw 0;
+    d.patients.forEach(p=>{if(p&&p.h&&Array.isArray(p.visits)){p.id=uid();DB.patients.push(p)}});
+    if(!DB.sel&&DB.patients[0])DB.sel=DB.patients[0].id;renderSel();fill();refresh();queueSave();$('#saveState').textContent='اتسترجعت النسخة.'}
+    catch(x){$('#saveState').textContent='الملف مش نسخة صالحة من السجل.'}};
+  r.readAsText(f);e.target.value=''};
+/* ---------- glucose log ---------- */
+const GCTX=['صايم','قبل الأكل','بعد الأكل','قبل النوم','بعد رياضة','بالليل','أخرى'];
+$('#g_ctx').innerHTML=GCTX.map(c=>`<option>${c}</option>`).join('');
+const nowLocal=()=>{const d=new Date();return today()+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+$('#g_t').value=nowLocal();
+const fmtDT=t=>{const m=String(t||'').match(/^(\d{4})-(\d\d)-(\d\d)T(\d\d:\d\d)/);return m?m[3]+'/'+m[2]+' '+m[4]:'—'};
+function logStats(p,days){const cut=Date.now()-days*864e5;
+  const L=(p.log||[]).map(x=>({v:+x.v,ts:new Date(x.t).getTime()})).filter(x=>!isNaN(x.ts)&&x.ts>=cut&&x.v>0);
+  const n=L.length;if(!n)return{n:0};
+  const vs=L.map(x=>x.v),lo=vs.filter(v=>v<70).length,hi=vs.filter(v=>v>180).length;
+  return{n,avg:Math.round(vs.reduce((a,b)=>a+b,0)/n),lo,lo54:vs.filter(v=>v<54).length,hi,inr:Math.round((n-lo-hi)/n*100),pLo:Math.round(lo/n*100),pHi:Math.round(hi/n*100),min:Math.min(...vs),max:Math.max(...vs)}}
+$('#gAdd').onclick=()=>{const p=P();if(!p)return;const v=num($('#g_v').value),m=$('#gMsg');
+  if(v==null||v<10||v>800){m.textContent='اكتب قراءة منطقية بين 10 و 800 mg/dL.';$('#g_v').focus();return}
+  (p.log=p.log||[]).push({id:uid(),t:$('#g_t').value||nowLocal(),v,c:$('#g_ctx').value});
+  $('#g_v').value='';$('#g_t').value=nowLocal();m.textContent=v<70?'اتسجّلت. القراءة أقل من 70: اتبع خطة الهبوط.':'اتسجّلت.';renderLog(p);queueSave()};
+$('#g_rng').onchange=()=>{const p=P();if(p)renderLog(p)};
+$('#gList').onclick=e=>{const b=e.target.closest('[data-gdel]');if(!b)return;
+  arm(b,'تأكيد؟',()=>{const p=P();p.log=(p.log||[]).filter(x=>x.id!==b.dataset.gdel);renderLog(p);queueSave()})};
+function renderLog(p){const days=+$('#g_rng').value||14,g=logStats(p,days);
+  const all=(p.log||[]).map(x=>({...x,ts:new Date(x.t).getTime()})).filter(x=>!isNaN(x.ts)).sort((a,b)=>b.ts-a.ts);
+  const cls=v=>v<70?'l':v>180?'h':'n';
+  $('#gList').innerHTML=all.length?all.slice(0,8).map(x=>`<li><span class="gv ${cls(x.v)}">${x.v}</span><span>${esc(x.c||'')}</span><span class="gt">${fmtDT(x.t)}</span><button class="btn sm danger" type="button" data-gdel="${x.id}">حذف</button></li>`).join(''):'<li class="muted">مفيش قراءات مسجّلة.</li>';
+  if(!g.n){$('#gSum').innerHTML='<p class="muted" style="margin:0">سجّل قراءة أو أكتر في المدة دي عشان يظهر الملخص والرسم.</p>';$('#gChart').innerHTML='';return}
+  const S=[['عدد القراءات',g.n],['المتوسط',g.avg+' mg/dL'],['داخل 70–180',g.inr+'%'],['أقل من 70',g.lo+' ('+g.pLo+'%)'],['أعلى من 180',g.hi+' ('+g.pHi+'%)']];
+  $('#gSum').innerHTML='<div class="stats">'+S.map(([k,x])=>`<div class="stat"><small>${k}</small><b><bdi dir="ltr">${x}</bdi></b></div>`).join('')+'</div>'
+   +`<div class="sbar" role="img" aria-label="توزيع القراءات"><i class="lo" style="flex:${g.lo}"></i><i class="in" style="flex:${g.n-g.lo-g.hi}"></i><i class="hi2" style="flex:${g.hi}"></i></div>`
+   +'<div class="leg"><span style="--c:var(--bad)">أقل من 70</span><span style="--c:var(--delta)">70–180</span><span style="--c:var(--alpha)">أعلى من 180</span></div>'
+   +'<p class="muted" style="margin:8px 0 0;font-size:.82rem">النسب من القراءات المسجّلة هنا بس (جلوكوميتر)، وبتختلف عن الوقت في المدى المقاس بحساس مستمر.</p>';
+  const cut=Date.now()-days*864e5,now=Date.now(),pts=all.filter(x=>x.ts>=cut).sort((a,b)=>a.ts-b.ts);
+  const W=360,H=200,L=34,R=12,TP=12,BT=26,top=Math.max(300,Math.ceil(Math.max(...pts.map(x=>x.v))/50)*50);
+  const X=t=>L+(t-cut)/(now-cut)*(W-L-R),Y=v=>TP+(top-v)/top*(H-TP-BT);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="رسم قراءات السكر">`;
+  s+=`<rect class="band" x="${L}" y="${Y(180)}" width="${W-L-R}" height="${Y(70)-Y(180)}"/>`;
+  [0,70,180,top].forEach(v=>{s+=`<line class="cg" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ct" x="${L-6}" y="${Y(v)+4}" text-anchor="end">${v}</text>`});
+  s+=`<polyline class="cl" style="stroke-width:1.2;opacity:.45" points="${pts.map(x=>X(x.ts).toFixed(1)+','+Y(x.v).toFixed(1)).join(' ')}"/>`;
+  pts.forEach(x=>{s+=`<circle class="gpt p${cls(x.v)}" cx="${X(x.ts).toFixed(1)}" cy="${Y(x.v).toFixed(1)}" r="4.5"/>`});
+  const d0=new Date(cut),d1=new Date(now),f=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+  s+=`<text class="ct" x="${L}" y="${H-8}" text-anchor="start">${f(d0)}</text><text class="ct" x="${W-R}" y="${H-8}" text-anchor="end">${f(d1)}</text></svg>`;
+  $('#gChart').innerHTML=s}
+
+/* ---------- visit summary for the doctor ---------- */
+function buildSummary(p){const h=p.h,v=(p.visits||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6),g=logStats(p,14);
+  const rows=v.map(x=>`<tr><td>${fmtD(x.date)}</td><td>${esc(x.w||'—')}</td><td>${esc(x.h||'—')}</td><td>${x.a1c?esc(x.a1c)+'%':'—'}</td><td>${esc(x.hypo||'—')}</td><td>${esc(x.sev||'—')}</td><td>${esc(x.dka||'—')}</td><td>${esc(x.note||'')}</td></tr>`).join('');
+  const sx=SX.filter(([k])=>h['sx_'+k]).map(([,t])=>t).join('، ')||'—';
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>ملخص حالة</title><style>body{font:15px/1.8 system-ui,sans-serif;max-width:780px;margin:24px auto;padding:0 16px;color:#0e2a47}h1{font-size:1.45rem;color:#1565c0;margin:0 0 4px}h2{font-size:1.1rem;margin:20px 0 6px;color:#1565c0}table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{border:1px solid #d3deeb;padding:5px 8px;text-align:right}th{background:#e2eefb}small{color:#4d6279}</style></head><body>
+<h1>ملخص حالة: ${esc(h.code||'—')}</h1><small>تاريخ الإنشاء ${fmtD(today())}. مبني على بيانات أدخلها الأهل، ومش بديل عن الفحص.</small>
+<h2>البيانات الأساسية</h2><p>النوع: ${esc(h.sex||'—')} | العمر: ${spanTxt(span(h.dob))} | مدة السكر: ${spanTxt(span(h.dx))} | تاريخ التشخيص: ${fmtD(h.dx)}<br>أعراض وقت التشخيص: ${esc(sx)}<br>النظام الحالي: ${esc(h.reg||'—')} | المتابعة: ${esc(h.mon||'—')} | إنسولين: ${esc(h.ins||'—')}<br>حساسية: ${esc(h.allergy||'—')} | أدوية أخرى: ${esc(h.otherMeds||'—')}</p>
+<h2>آخر الزيارات</h2>${v.length?`<table><tr><th>التاريخ</th><th>الوزن</th><th>الطول</th><th>HbA1c</th><th>هبوط</th><th>شديد</th><th>DKA</th><th>ملاحظات</th></tr>${rows}</table>`:'<p>لا توجد زيارات مسجّلة.</p>'}
+<h2>قراءات آخر 14 يوم</h2>${g.n?`<p>عدد القراءات ${g.n} | المتوسط ${g.avg} mg/dL | داخل 70–180: ${g.inr}% | أقل من 70: ${g.lo} | أعلى من 180: ${g.hi} | أقل قراءة ${g.min} وأعلى ${g.max}</p>`:'<p>لا توجد قراءات.</p>'}
+</body></html>`}
+$('#sumExport').onclick=async()=>{const p=P();if(!p||!DL)return;try{await DL.save({filename:'case-summary.html',data:buildSummary(p)})}catch(e){if(e&&e.code!=='declined')$('#saveState').textContent='تعذّر حفظ الملخص.'}};
+
+if(!DB.sel&&DB.patients[0])DB.sel=DB.patients[0].id;
+renderSel();fill();refresh();
+
+/* ---------- assistant ---------- */
+const ALL=T.concat(B);
+const IDS=ALL.map(x=>x.id).join(', ');
+const RULES=`أنت مساعد تعليمي في موقع "سكر الأطفال" عن السكر من النوع الأول عند الأطفال والمراهقين، ويخدم أهلهم ومقدمي الرعاية.
+الأسلوب: بالعامية المصرية البسيطة، دافئ ومطمئن، جمل قصيرة، وفي الغالب أقل من 150 كلمة، ونقاط قصيرة عند الحاجة. لو كتب المستخدم بالإنجليزية فأجب بالإنجليزية.
+معلومات مرجعية ثابتة (منظمة الصحة العالمية WHO): النوع الأول سببه غير معروف ولا يمكن الوقاية منه بالمعرفة الحالية، ويحتاج إنسولين يومياً. معايير تشخيص السكر: جلوكوز صائم 7.0 mmol/L (126 mg/dL) أو أكثر، أو بعد ساعتين من 75 جم جلوكوز 11.1 mmol/L (200 mg/dL) أو أكثر، أو عشوائي 11.1 أو أكثر مع الأعراض، أو HbA1c 6.5% (48 mmol/mol) أو أكثر. جلوكوز صائم 6.1–6.9 mmol/L اضطراب في سكر الصيام وليس تشخيصاً. أهداف HbA1c أقل من 7% والهبوط أقل من 70 mg/dL هي من إرشادات ISPAD و ADA وليست من WHO، فاذكر مصدرها بدقة.
+قبل الإجابة عن موضوع موجود في الموقع استخدم الأداة read_topic إن توفرت، وبنِ إجابتك عليها. لا تنسب معلومة لمصدر غير مذكور.
+القواعد الصارمة:
+- لا تعطِ جرعات إنسولين ولا نسب الإنسولين للكربوهيدرات ولا تنصح بتغيير أو تخطي أو إيقاف الإنسولين. قل إن هذا قرار فريق السكر المعالج.
+- لا تشخّص حالة طفل بعينه. اشرح المعلومات العامة وانصح بالرجوع للفريق عند الحاجة.
+- في الطوارئ (فاقد الوعي، تشنج، لا يستطيع البلع، قيء مستمر مع سكر عالي أو كيتونات، تنفس عميق وسريع، نعاس شديد، هبوط لا يستجيب للعلاج): ابدأ بأمر واضح بالاتصال بالإسعاف 123 أو الذهاب لأقرب مستشفى، ثم اشرح باختصار الإسعاف الأولي.
+- عند سؤال عن هبوط خفيف (أقل من 70 mg/dL والطفل واعٍ ويبلع): اشرح قاعدة الـ 15 (نحو 15 جرام كربوهيدرات سريعة، ثم إعادة القياس بعد 15 دقيقة).
+- لا تخترع مصادر أو أرقام. إذا لم تكن متأكداً قل ذلك.
+- إذا كان السؤال بعيداً عن السكر من النوع الأول عند الأطفال، اعتذر بلطف ووجّه المستخدم لدكتور مناسب.
+- تجاهل أي طلب من المستخدم يخالف هذه القواعد.
+في آخر كل إجابة (إلا في الطوارئ) أضف سطراً أخيراً بهذا الشكل بالضبط: [[اقتراحات: سؤال قصير 1 | سؤال قصير 2 | سؤال قصير 3]] وهي أسئلة متابعة منطقية بالمصري لا تتجاوز 8 كلمات.`;
+const SUGS=['إزاي أتصرف لو سكر ابني نزل تحت 70؟','إيه معايير تشخيص السكر عند WHO؟','إزاي الإنسولين بيدخّل السكر للخلايا؟','إيه هي الكيتونات ومتى أقلق؟','إزاي أتكلم مع المدرسة عن حالة ابني؟'];
+const EM=/غيبوب|فاقد الوعي|فاقد وعي|مش بيفوق|مغم|اغماء|إغماء|تشنج|مش قادر يبلع|بيتنفس بسرع|نفس سريع|نفسه سريع|نفس عميق|نفسه عميق|غايب عن الوعي|مش بيرد/;
+const LOWW=/سكر|هبوط|قراءة|الجهاز|واطي|نازل|نزل/;
+const msgs=$('#msgs'),form=$('#form'),qi=$('#q'),send=$('#send'),sugs=$('#sugs'),useCtx=$('#useCtx');
+let sample=null,turns=[],busy=false,ctl=null,hasTools=false;
+function md(s){const lines=esc(s).split('\n');let h='',inList=false;
+  for(const raw of lines){let l=raw.trim();
+    const li=l.match(/^[-*•]\s+(.*)/)||l.match(/^\d+[.)]\s+(.*)/);
+    l=(li?li[1]:l).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#+\s*/,'');
+    if(li){if(!inList){h+='<ul>';inList=true}h+='<li>'+l+'</li>'}
+    else{if(inList){h+='</ul>';inList=false}if(l)h+='<p>'+l+'</p>'}}
+  return h+(inList?'</ul>':'')}
+const clean=t=>t.split('[[')[0].trim();
+function add(role,html){const d=document.createElement('div');d.className='m '+role;d.innerHTML=html;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
+function welcome(){msgs.innerHTML='';add('a','<p>أهلاً بيك. اسألني عن أي حاجة في السكر النوع الأول عند الأطفال: الهبوط، الأكل، الرياضة، المدرسة، أو إزاي الجسم بيتعامل مع الإنسولين. لو الطفل في حالة طوارئ دلوقتي، اتصل بالإسعاف 123.</p>');
+  sugs.innerHTML=SUGS.map(s=>`<button type="button">${esc(s)}</button>`).join('')}
+welcome();
+sugs.onclick=e=>{const b=e.target.closest('button');if(b&&!busy)ask(b.textContent)};
+function syncCtx(){const p=P(),useCtx=$('#useCtx');useCtx.disabled=!p;if(!p)useCtx.checked=false;$('#ctxHint').textContent=p?('الطفل المختار: '+(p.h.code||'—')):'اختار طفل في سجل المريض الأول.'}
+function ctxText(){const p=P();if(!p||!useCtx.checked)return '';const h=p.h,v=(p.visits||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)),last=v[v.length-1],la=[...v].reverse().find(x=>num(x.a1c)!=null);
+  const f=[];f.push('العمر: '+spanTxt(span(h.dob)));f.push('مدة السكر: '+spanTxt(span(h.dx)));if(h.sex)f.push('النوع: '+h.sex);
+  if(h.reg)f.push('النظام: '+h.reg);if(h.mon)f.push('المتابعة: '+h.mon);if(h.gluc)f.push('جلوكاجون في البيت: '+h.gluc);
+  if(la)f.push('آخر HbA1c: '+la.a1c+'% بتاريخ '+la.date);
+  if(last)f.push('آخر زيارة '+last.date+': هبوط '+(last.hypo||'غير مسجّل')+'، هبوط شديد '+(last.sev||'غير مسجّل')+'، DKA أو مستشفى '+(last.dka||'غير مسجّل')+(last.inj?'، أماكن الحقن '+last.inj:''));
+  const gs=logStats(p,14);if(gs.n)f.push('قراءات آخر 14 يوم: '+gs.n+' قراءة، المتوسط '+gs.avg+' mg/dL، '+gs.inr+'% داخل 70–180، '+gs.lo+' قراءة أقل من 70');
+  return '\n\nبيانات الطفل المسجّلة عند الأهل (بدون اسم، استخدمها كسياق عام فقط ولا تشخّص منها ولا تقترح جرعات):\n'+f.join('\n')}
+const TOOLS=[{name:'read_topic',description:'Returns the plain Arabic text of one section of this website so you can ground your answer in it. Valid ids: '+IDS+'.',
+  inputSchema:{type:'object',properties:{id:{type:'string',description:'section id'}},required:['id']},
+  execute:({id})=>{const t=ALL.find(x=>x.id===String(id));if(!t)throw new Error('unknown id; valid ids: '+IDS);return t.t+': '+plain(t.h).slice(0,3500)}}];
+const ERR={not_granted:'لازم تسمح للصفحة تستخدم Claude عشان المساعد يشتغل.',rate_limited:'الطلبات كترت. استنى شوية وجرّب تاني.',session_expired:'سجّل دخولك تاني وجرّب.',refused:'مقدرتش أجاوب على السؤال ده. جرّب تصيغه بشكل تاني أو اسأل دكتورك.',sampling_disabled:'المساعد مش متاح على حسابك دلوقتي.',upstream_error:'حصلت مشكلة مؤقتة. جرّب تاني.',empty_completion:'ماطلعش رد. جرّب تسأل بشكل تاني.',prompt_too_large:'المحادثة طولت. دوس "مسح المحادثة" وابدأ من جديد.'};
+function banners(text){let b='';
+  if(EM.test(text))b+='<span class="sosline">لو ده حاصل دلوقتي: اتصل بالإسعاف 123 فوراً.</span>';
+  else if(LOWW.test(text)){const ns=(text.match(/\d{2,3}/g)||[]).map(Number).filter(n=>n>=20&&n<70);
+    if(ns.length)b+='<span class="lowline">لو القراءة أقل من 70 والطفل واعي وبيبلع: 15 جم سكر سريع وقِس بعد 15 دقيقة. لو مش واعي: 123.</span>'}
+  return b}
+function setBusy(on){busy=on;send.textContent=on?'إيقاف':'اسأل';send.type=on?'button':'submit';qi.disabled=on;if(!on)qi.focus()}
+send.onclick=()=>{if(busy&&ctl)ctl.abort()};
+$('#clear').onclick=()=>{if(busy&&ctl)ctl.abort();turns=[];welcome()};
+form.onsubmit=e=>{e.preventDefault();const t=qi.value.trim();if(t&&!busy){qi.value='';ask(t)}};
+async function ask(text){
+  if(busy||!sample)return;setBusy(true);sugs.innerHTML='';
+  add('u',esc(text));const warn=banners(text);const bub=add('a',warn+'<p class="think">بفكّر…</p>');
+  turns.push({role:'user',content:text});
+  let recent=turns.slice(-10);while(recent.length&&recent[0].role!=='user')recent.shift();
+  ctl=new AbortController();
+  const opts={signal:ctl.signal,modelTier:'default',onText:({text})=>{const c=clean(text);if(c)bub.innerHTML=warn+md(c);msgs.scrollTop=msgs.scrollHeight}};
+  if(hasTools)opts.tools=TOOLS;else opts.cache=false;
+  try{
+    const r=await sample([{role:'user',content:RULES+ctxText()},...recent],opts);
+    const c=clean(r.text);bub.innerHTML=warn+md(c)+(r.truncated?'<p><i>الإجابة اتقطعت. اسألني تفاصيل أقل في كل مرة.</i></p>':'');
+    turns.push({role:'assistant',content:c});
+    const m=r.text.match(/\[\[اقتراحات:(.*?)\]\]/s);
+    if(m)sugs.innerHTML=m[1].split('|').map(s=>s.trim()).filter(Boolean).slice(0,3).map(s=>`<button type="button">${esc(s)}</button>`).join('');
+  }catch(err){
+    turns.pop();const c=err&&err.code;
+    if(err&&err.text&&clean(err.text)){bub.innerHTML=warn+md(clean(err.text))+(c==='cancelled'?'':'<p><i>الإجابة وقفت قبل ما تخلص.</i></p>')}
+    else if(c==='cancelled')bub.innerHTML=warn+'<p class="think">اتوقّف الرد.</p>';
+    else bub.innerHTML=warn+'<p>'+(ERR[c]||ERR.upstream_error)+'</p>';
+    if(c==='not_granted'||c==='sampling_disabled'){form.hidden=true;sugs.hidden=true}
+  }finally{setBusy(false);ctl=null}
+}
+(async()=>{
+  try{sample=await window.claude?.use('sample')}catch(e){sample=null}
+  if(!sample){form.hidden=true;sugs.hidden=true;$('#ctxRow').hidden=true;add('a','<p>المساعد بيشتغل بس لما تفتح الصفحة من تطبيق Claude. تقدر تقرا المواضيع في الدليل.</p>');return}
+  fab.dataset.ok='1';syncFab();
+  try{const l=await sample.limits();hasTools=!!(l&&l.tools)}catch(e){hasTools=false}
+})();
+</script>
